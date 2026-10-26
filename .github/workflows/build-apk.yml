@@ -1,10 +1,10 @@
 name: APK Derle
 
-# Projeyi GitHub'a her gönderdiğinizde (push) veya elle tetiklediğinizde çalışır.
+# Projeyi her gönderdiğinizde (push) veya elle tetiklediğinizde çalışır.
 on:
   push:
     branches: [ main, master ]
-  workflow_dispatch:   # Actions sekmesinden "Run workflow" ile elle çalıştırma
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,11 +19,12 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Android SDK kur
-        uses: android-actions/setup-android@v3
-
+      # ubuntu-latest sunucusunda Android SDK (platform-34 + build-tools) hazır gelir;
+      # ayrı bir kurulum adımına gerek yok.
       - name: APK derle (debug)
-        run: ./gradlew assembleDebug --no-daemon
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: APK'yı yükle
         uses: actions/upload-artifact@v4
