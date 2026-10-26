@@ -1,0 +1,33 @@
+name: APK Derle
+
+# Projeyi GitHub'a her gönderdiğinizde (push) veya elle tetiklediğinizde çalışır.
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:   # Actions sekmesinden "Run workflow" ile elle çalıştırma
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kodu çek
+        uses: actions/checkout@v4
+
+      - name: JDK 17 kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Android SDK kur
+        uses: android-actions/setup-android@v3
+
+      - name: APK derle (debug)
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: APK'yı yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: kadobabacloud-gps-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

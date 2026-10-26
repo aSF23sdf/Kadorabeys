@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Paneli</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: system-ui, Roboto, sans-serif; }
+    #bar {
+      background: #0d47a1; color: #fff; padding: 10px 14px; font-size: 14px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    #bar b { font-size: 15px; }
+    #count { font-size: 12px; opacity: .85; }
+    #map { height: calc(100% - 42px); width: 100%; }
+    .leaflet-popup-content { font-size: 13px; }
+    #msg {
+      position: absolute; top: 55px; left: 50%; transform: translateX(-50%);
+      background: #fff; padding: 10px 16px; border-radius: 8px; font-size: 13px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.2); z-index: 9999; color: #c62828;
+    }
+  </style>
+</head>
+<body>
+  <div id="bar"><b>📍 Admin Paneli</b><span id="count">Yükleniyor…</span></div>
+  <div id="map"></div>
+  <div id="msg" style="display:none"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const qs = new URLSearchParams(location.search);
+    const FIREBASE = (qs.get('firebase') || '').replace(/\/+$/, '');
+    const SECRET = qs.get('secret') || '';
+
+    const map = L.map('map').setView([39.0, 35.0], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19, attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    const markers = {};
+    let firstFit = true;
+
+    function timeAgo(ts) {
+      if (!ts) return 'bilinmiyor';
+      const s = Math.floor((Date.now() - ts) / 1000);
+      if (s < 60) return s + ' sn önce';
+      if (s < 3600) return Math.floor(s/60) + ' dk önce';
+      if (s < 86400) return Math.floor(s/3600) + ' sa önce';
+      return Math.floor(s/86400) + ' gün önce';
+    }
+    function isOnline(ts) { return ts && (Date.now() - ts) < 120000; }
+    function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+    function showMsg(t){const m=document.getElementById('msg');m.textContent=t;m.style.display='block';}
+    function hideMsg(){document.getElementById('msg').style.display='none';}
+
+    async function refresh() {
+      if (!FIREBASE) { showMsg('Firebase adresi ayarlı değil.'); return; }
+      let list;
+      try {
+        let url = FIREBASE + '/devices.json';
+        if (SECRET) url += '?auth=' + encodeURIComponent(SECRET);
+        const res = await fetch(url);
+        if (!res.ok) { showMsg('Firebase erişimi başarısız (' + res.status + '). Kuralları kontrol et.'); return; }
+        const obj = await res.json();  // { id: {label, last}, ... }  veya null
+        // Nesneyi listeye çevir
+        list = obj ? Object.entries(obj).map(([id, d]) => ({
+          id, label: (d && d.label) || id, last: (d && d.last) || null
+        })) : [];
+        hideMsg();
+      } catch (e) { showMsg('Bağlantı hatası. İnternet var mı?'); return; }
+
+      const online = list.filter(d => d.last && isOnline(d.last.time)).length;
+      document.getElementById('count').textContent =
+        list.length + ' cihaz · ' + online + ' çevrimiçi';
+
+      const bounds = [];
+      list.forEach(d => {
+        if (!d.last) return;
+        const pos = [d.last.lat, d.last.lng];
+        bounds.push(pos);
+        const on = isOnline(d.last.time);
+        const bat = (d.last.battery != null && d.last.battery >= 0) ? 'Batarya: ' + d.last.battery + '%<br>' : '';
+        const popup =
+          '<b>' + esc(d.label || d.id) + '</b><br>' +
+          (on ? '🟢 Çevrimiçi' : '🔴 Çevrimdışı') + ' · ' + timeAgo(d.last.time) + '<br>' +
+          bat + 'Konum: ' + d.last.lat.toFixed(5) + ', ' + d.last.lng.toFixed(5);
+        if (markers[d.id]) {
+          markers[d.id].setLatLng(pos);
+          markers[d.id].getPopup().setContent(popup);
+        } else {
+          markers[d.id] = L.marker(pos).addTo(map).bindPopup(popup);
+        }
+      });
+
+      if (firstFit && bounds.length) {
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+        firstFit = false;
+      }
+    }
+
+    refresh();
+    setInterval(refresh, 10000);
+  </script>
+</body>
+</html>
