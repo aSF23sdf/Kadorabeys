@@ -1,0 +1,76 @@
+name: IPA Derle (imzasız)
+
+# iOS kaynağı değiştiğinde veya elle tetiklendiğinde çalışır.
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'ios/**'
+      - '.github/workflows/build-ipa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Kodu çek
+        uses: actions/checkout@v4
+
+      - name: XcodeGen kur
+        run: brew install xcodegen
+
+      - name: Xcode projesini üret
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Derle (imzasız)
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project KadobabaGPS.xcodeproj \
+            -scheme KadobabaGPS \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY= \
+            build
+
+      - name: IPA paketle
+        working-directory: ios
+        run: |
+          APP="build/Build/Products/Release-iphoneos/KadobabaGPS.app"
+          if [ ! -d "$APP" ]; then
+            echo ".app bulunamadı, üretilenler:"
+            ls -R build/Build/Products || true
+            exit 1
+          fi
+          rm -rf Payload
+          mkdir Payload
+          cp -R "$APP" Payload/
+          zip -qr kadobabacloud-gps-ios-unsigned.ipa Payload
+          ls -la kadobabacloud-gps-ios-unsigned.ipa
+
+      - name: IPA'yı artifact olarak yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: kadobabacloud-gps-ipa
+          path: ios/kadobabacloud-gps-ios-unsigned.ipa
+          if-no-files-found: error
+
+      - name: IPA'yı ipa-output dalına yaz
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          mkdir -p output
+          cp ios/kadobabacloud-gps-ios-unsigned.ipa output/kadobabacloud-gps-ios-unsigned.ipa
+          git checkout --orphan ipa-output
+          git reset
+          git add -f output/kadobabacloud-gps-ios-unsigned.ipa
+          git commit -m "IPA build output [skip ci]"
+          git push -f origin ipa-output
