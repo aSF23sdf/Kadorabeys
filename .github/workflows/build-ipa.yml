@@ -14,10 +14,17 @@ permissions:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - name: Kodu çek
         uses: actions/checkout@v4
+
+      - name: En yeni Xcode'u seç
+        run: |
+          latest=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
+          echo "Seçilen Xcode: $latest"
+          sudo xcode-select -s "$latest/Contents/Developer"
+          xcodebuild -version
 
       - name: XcodeGen kur
         run: brew install xcodegen
