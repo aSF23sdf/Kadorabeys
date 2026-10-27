@@ -2,7 +2,7 @@ name: KadobabaGPS
 options:
   bundleIdPrefix: com.kadobabacloud
   deploymentTarget:
-    iOS: "14.0"
+    iOS: "15.0"
   createIntermediateGroups: true
 
 targets:

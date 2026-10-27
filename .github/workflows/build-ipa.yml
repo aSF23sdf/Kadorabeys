@@ -34,12 +34,28 @@ jobs:
             -project KadobabaGPS.xcodeproj \
             -scheme KadobabaGPS \
             -configuration Release \
-            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
             -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY= \
-            build
+            clean build 2>&1 | tee xcodebuild.log
+
+      - name: Derleme logunu build-log dalına yaz
+        if: always()
+        working-directory: ios
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          mkdir -p /tmp/logout
+          tail -n 120 xcodebuild.log > /tmp/logout/xcodebuild-tail.log 2>/dev/null || echo "no log" > /tmp/logout/xcodebuild-tail.log
+          cd "$GITHUB_WORKSPACE"
+          git checkout --orphan build-log
+          git reset
+          cp /tmp/logout/xcodebuild-tail.log xcodebuild-tail.log
+          git add -f xcodebuild-tail.log
+          git commit -m "build log [skip ci]"
+          git push -f origin build-log
 
       - name: IPA paketle
         working-directory: ios
