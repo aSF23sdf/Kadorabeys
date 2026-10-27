@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_copy_id"
+        android:title="Cihaz ID'sini kopyala"
+        android:showAsAction="never" />
+    <item
+        android:id="@+id/menu_battery"
+        android:title="Pil optimizasyonu ayarları"
+        android:showAsAction="never" />
+    <item
+        android:id="@+id/menu_about"
+        android:title="Hakkında"
+        android:showAsAction="never" />
+</menu>

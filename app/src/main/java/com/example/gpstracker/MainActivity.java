@@ -1,33 +1,37 @@
 package com.example.gpstracker;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.TextUtils;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * Tek ekranlı kurulum arayüzü:
- *  - Sunucu (admin paneli) adresi girilir
- *  - Cihaza bir etiket verilir
+ * Tek ekranlı kurulum arayüzü (SADE sürüm, dış kütüphane yok):
+ *  - Firebase veritabanı adresi girilir
+ *  - Cihaza etiket verilir
  *  - İzinler istenir ve takip başlatılır/durdurulur
+ *  - Admin paneli açılır
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     private static final int REQ_LOCATION = 100;
     private static final int REQ_BACKGROUND = 101;
@@ -52,8 +56,9 @@ public class MainActivity extends AppCompatActivity {
         Button startBtn = findViewById(R.id.startBtn);
         Button stopBtn = findViewById(R.id.stopBtn);
         Button adminBtn = findViewById(R.id.adminBtn);
+        ImageButton menuBtn = findViewById(R.id.menuBtn);
+        menuBtn.setOnClickListener(this::showMenu);
 
-        // Cihaz kimliği yoksa üret
         String deviceId = prefs.getString(Prefs.DEVICE_ID, null);
         if (deviceId == null) {
             deviceId = UUID.randomUUID().toString().substring(0, 8);
@@ -61,15 +66,13 @@ public class MainActivity extends AppCompatActivity {
         }
         deviceIdText.setText("Cihaz ID: " + deviceId);
 
-        // Kayıtlı değerleri yükle
         serverInput.setText(prefs.getString(Prefs.FIREBASE_URL, ""));
         secretInput.setText(prefs.getString(Prefs.FIREBASE_SECRET, ""));
-        labelInput.setText(prefs.getString(Prefs.DEVICE_LABEL, android.os.Build.MODEL));
+        labelInput.setText(prefs.getString(Prefs.DEVICE_LABEL, Build.MODEL));
 
         startBtn.setOnClickListener(v -> onStartClicked());
         stopBtn.setOnClickListener(v -> onStopClicked());
         adminBtn.setOnClickListener(v -> {
-            // Firebase bilgilerini kaydet ki panel kullanabilsin
             prefs.edit()
                     .putString(Prefs.FIREBASE_URL, serverInput.getText().toString().trim())
                     .putString(Prefs.FIREBASE_SECRET, secretInput.getText().toString().trim())
@@ -101,16 +104,22 @@ public class MainActivity extends AppCompatActivity {
         statusText.setText("Durum: Takip durduruldu");
     }
 
-    // --- İzin akışı ---
+    // --- İzin akışı (framework API'leri) ---
     private void requestPermissionsThenStart() {
         List<String> needed = new ArrayList<>();
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             needed.add(Manifest.permission.ACCESS_FINE_LOCATION);
             needed.add(Manifest.permission.ACCESS_COARSE_LOCATION);
         }
+        // Adım sayımı izni (Android 10+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+                && checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION)
+                != PackageManager.PERMISSION_GRANTED) {
+            needed.add(Manifest.permission.ACTIVITY_RECOGNITION);
+        }
         if (!needed.isEmpty()) {
-            ActivityCompat.requestPermissions(this, needed.toArray(new String[0]), REQ_LOCATION);
+            requestPermissions(needed.toArray(new String[0]), REQ_LOCATION);
         } else {
             requestBackgroundLocation();
         }
@@ -118,13 +127,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestBackgroundLocation() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-                && ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                && checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             Toast.makeText(this,
                     "Lütfen 'Her zaman izin ver' seçeneğini seç",
                     Toast.LENGTH_LONG).show();
-            ActivityCompat.requestPermissions(this,
+            requestPermissions(
                     new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION},
                     REQ_BACKGROUND);
         } else {
@@ -134,10 +142,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-                && ContextCompat.checkSelfPermission(this,
-                Manifest.permission.POST_NOTIFICATIONS)
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
+            requestPermissions(
                     new String[]{Manifest.permission.POST_NOTIFICATIONS},
                     REQ_NOTIF);
         } else {
@@ -147,19 +154,51 @@ public class MainActivity extends AppCompatActivity {
 
     private void startTracking() {
         Intent serviceIntent = new Intent(this, LocationService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent);
-        } else {
-            startService(serviceIntent);
-        }
+        startForegroundService(serviceIntent);
         statusText.setText("Durum: Takip aktif ✓");
         Toast.makeText(this, "Konum takibi başlatıldı", Toast.LENGTH_SHORT).show();
     }
 
+    // --- Menü (başlıktaki ⋮ butonu) ---
+    private void showMenu(android.view.View anchor) {
+        PopupMenu pm = new PopupMenu(this, anchor);
+        pm.getMenuInflater().inflate(R.menu.main_menu, pm.getMenu());
+        pm.setOnMenuItemClickListener(this::handleMenu);
+        pm.show();
+    }
+
+    private boolean handleMenu(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.menu_copy_id) {
+            String did = prefs.getString(Prefs.DEVICE_ID, "-");
+            ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            if (cm != null) cm.setPrimaryClip(ClipData.newPlainText("device_id", did));
+            Toast.makeText(this, "Cihaz ID kopyalandı: " + did, Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (id == R.id.menu_battery) {
+            try {
+                startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+            } catch (Exception e) {
+                startActivity(new Intent(Settings.ACTION_SETTINGS));
+            }
+            return true;
+        } else if (id == R.id.menu_about) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Kadobabacloud GPS")
+                    .setMessage("Sürüm 1.0\n\nArka planda çalışan konum takip uygulaması. "
+                            + "Konum, adım ve mesafe bilgisi Firebase üzerinden Admin Paneli'nde "
+                            + "haritada görüntülenir.\n\nYalnızca sana ait ya da takip için açık "
+                            + "izin aldığın cihazlarda kullan.")
+                    .setPositiveButton("Tamam", null)
+                    .show();
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+                                           String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         boolean granted = grantResults.length > 0
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
@@ -170,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
                 else statusText.setText("Durum: Konum izni reddedildi");
                 break;
             case REQ_BACKGROUND:
-                requestNotificationPermission(); // izin verilmese de devam (ön planda çalışır)
+                requestNotificationPermission();
                 break;
             case REQ_NOTIF:
                 startTracking();

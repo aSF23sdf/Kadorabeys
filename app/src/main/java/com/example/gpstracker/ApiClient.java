@@ -36,16 +36,19 @@ public class ApiClient {
     }
 
     public void uploadAsync(double lat, double lng, float accuracy,
-                            float speed, double altitude, int battery, long time) {
+                            float speed, double altitude, int battery, long time,
+                            long steps, double distanceM) {
         if (baseUrl.isEmpty()) {
             Log.w(TAG, "Firebase adresi ayarlanmamış, gönderim atlandı.");
             return;
         }
-        executor.execute(() -> upload(lat, lng, accuracy, speed, altitude, battery, time));
+        executor.execute(() ->
+                upload(lat, lng, accuracy, speed, altitude, battery, time, steps, distanceM));
     }
 
     private void upload(double lat, double lng, float accuracy,
-                        float speed, double altitude, int battery, long time) {
+                        float speed, double altitude, int battery, long time,
+                        long steps, double distanceM) {
         HttpURLConnection conn = null;
         try {
             JSONObject last = new JSONObject();
@@ -56,6 +59,8 @@ public class ApiClient {
             last.put("altitude", altitude);
             last.put("battery", battery);
             last.put("time", time);
+            last.put("steps", steps);
+            last.put("distanceM", Math.round(distanceM));
 
             JSONObject node = new JSONObject();
             node.put("label", label != null ? label : deviceId);

@@ -1,115 +1,193 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:orientation="vertical"
+    android:background="#0B1220">
 
+    <!-- Başlık bandı -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_header"
+        android:padding="20dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <ImageView
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:src="@drawable/ic_launcher" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="Kadobabacloud GPS"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="4dp" />
+            android:orientation="vertical"
+            android:layout_marginStart="14dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Arka plan konum takibi"
-            android:textSize="14sp"
-            android:layout_marginBottom="24dp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Kadobabacloud GPS"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Firebase veritabanı adresi"
-            android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Konum Takip Sistemi"
+                android:textColor="#D6E4FF"
+                android:textSize="13sp" />
+        </LinearLayout>
 
-        <EditText
-            android:id="@+id/serverInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="https://proje-default-rtdb.firebaseio.com"
-            android:inputType="textUri"
-            android:layout_marginBottom="16dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Güvenlik anahtarı (opsiyonel)"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/secretInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="boş bırakabilirsin"
-            android:inputType="text"
-            android:layout_marginBottom="16dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Cihaz etiketi"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/labelInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Örn: Babamın telefonu"
-            android:inputType="text"
-            android:layout_marginBottom="16dp" />
-
-        <TextView
-            android:id="@+id/deviceIdText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Cihaz ID: -"
-            android:textSize="12sp"
-            android:layout_marginBottom="24dp" />
-
-        <Button
-            android:id="@+id/startBtn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Takibi Başlat"
-            android:layout_marginBottom="8dp" />
-
-        <Button
-            android:id="@+id/stopBtn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Takibi Durdur"
-            style="?attr/materialButtonOutlinedStyle" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#E0E0E0"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="12dp" />
-
-        <Button
-            android:id="@+id/adminBtn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="📍 Admin Paneli (cihazları gör)" />
-
-        <TextView
-            android:id="@+id/statusText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Durum: Beklemede"
-            android:textSize="14sp"
-            android:layout_marginTop="24dp" />
-
+        <ImageButton
+            android:id="@+id/menuBtn"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:src="@android:drawable/ic_menu_more"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Menü" />
     </LinearLayout>
 
-</ScrollView>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Ayar kartı -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="BAĞLANTI AYARLARI"
+                    android:textColor="#8EA0BA"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08"
+                    android:layout_marginBottom="14dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Firebase veritabanı adresi"
+                    android:textColor="#E8EEF7"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="6dp" />
+
+                <EditText
+                    android:id="@+id/serverInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="https://proje-default-rtdb.firebaseio.com"
+                    android:textColor="#E8EEF7"
+                    android:textColorHint="#5A6B85"
+                    android:background="@drawable/bg_input"
+                    android:padding="14dp"
+                    android:inputType="textUri"
+                    android:layout_marginBottom="14dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Güvenlik anahtarı (opsiyonel)"
+                    android:textColor="#E8EEF7"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="6dp" />
+
+                <EditText
+                    android:id="@+id/secretInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="boş bırakabilirsin"
+                    android:textColor="#E8EEF7"
+                    android:textColorHint="#5A6B85"
+                    android:background="@drawable/bg_input"
+                    android:padding="14dp"
+                    android:inputType="text"
+                    android:layout_marginBottom="14dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cihaz etiketi"
+                    android:textColor="#E8EEF7"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="6dp" />
+
+                <EditText
+                    android:id="@+id/labelInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Örn: Babaannemin telefonu"
+                    android:textColor="#E8EEF7"
+                    android:textColorHint="#5A6B85"
+                    android:background="@drawable/bg_input"
+                    android:padding="14dp"
+                    android:inputType="text"
+                    android:layout_marginBottom="12dp" />
+
+                <TextView
+                    android:id="@+id/deviceIdText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cihaz ID: -"
+                    android:textColor="#8EA0BA"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Butonlar -->
+            <Button
+                android:id="@+id/startBtn"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Takibi Başlat"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:background="@drawable/btn_primary"
+                android:layout_marginTop="18dp" />
+
+            <Button
+                android:id="@+id/stopBtn"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Takibi Durdur"
+                android:textColor="#2F81F7"
+                android:background="@drawable/btn_secondary"
+                android:layout_marginTop="10dp" />
+
+            <Button
+                android:id="@+id/adminBtn"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Admin Paneli — Cihazları Gör"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:background="@drawable/btn_primary"
+                android:layout_marginTop="22dp" />
+
+            <TextView
+                android:id="@+id/statusText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Durum: Beklemede"
+                android:textColor="#8EA0BA"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:layout_marginTop="18dp" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

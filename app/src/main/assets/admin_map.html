@@ -2,106 +2,249 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Admin Paneli</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; font-family: system-ui, Roboto, sans-serif; }
-    #bar {
-      background: #0d47a1; color: #fff; padding: 10px 14px; font-size: 14px;
-      display: flex; justify-content: space-between; align-items: center;
+    :root{
+      --bg:#0b1220; --panel:#121a2b; --panel2:#1a2538; --line:#243149;
+      --txt:#e8eef7; --dim:#8ea0ba; --accent:#2f81f7; --green:#2ecc71; --red:#ff5a5a;
+      --amber:#f5a623;
     }
-    #bar b { font-size: 15px; }
-    #count { font-size: 12px; opacity: .85; }
-    #map { height: calc(100% - 42px); width: 100%; }
-    .leaflet-popup-content { font-size: 13px; }
-    #msg {
-      position: absolute; top: 55px; left: 50%; transform: translateX(-50%);
-      background: #fff; padding: 10px 16px; border-radius: 8px; font-size: 13px;
-      box-shadow: 0 3px 12px rgba(0,0,0,.2); z-index: 9999; color: #c62828;
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--txt);}
+    #app{display:flex;flex-direction:column;height:100%;}
+
+    /* Üst bar */
+    #bar{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 16px;background:linear-gradient(135deg,#0d47a1,#2f81f7);
+      box-shadow:0 2px 10px rgba(0,0,0,.4);z-index:1000;
     }
+    #bar .title{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:700;}
+    #bar .title svg{width:22px;height:22px;}
+    #stat{font-size:12px;opacity:.95;display:flex;align-items:center;gap:6px;}
+    #stat .pulse{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(46,204,113,.7);animation:p 1.8s infinite;}
+    @keyframes p{0%{box-shadow:0 0 0 0 rgba(46,204,113,.6)}70%{box-shadow:0 0 0 7px rgba(46,204,113,0)}100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}}
+
+    #map{flex:1;width:100%;background:#0b1220;}
+
+    /* Alt panel */
+    #sheet{
+      background:var(--panel);border-top:1px solid var(--line);
+      max-height:46%;overflow-y:auto;box-shadow:0 -4px 20px rgba(0,0,0,.5);
+    }
+    #sheet .handle{width:40px;height:4px;background:var(--line);border-radius:3px;margin:8px auto 4px;}
+    .sec-title{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:6px 16px 8px;font-weight:700;}
+
+    .card{
+      display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);
+      cursor:pointer;transition:background .15s;
+    }
+    .card:active,.card.sel{background:var(--panel2);}
+    .avatar{
+      width:42px;height:42px;border-radius:12px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,#2f81f7,#1557b0);position:relative;
+    }
+    .avatar svg{width:22px;height:22px;color:#fff;}
+    .avatar .status{position:absolute;right:-2px;bottom:-2px;width:13px;height:13px;border-radius:50%;border:2px solid var(--panel);}
+    .st-on{background:var(--green);} .st-off{background:var(--red);}
+    .card .info{flex:1;min-width:0;}
+    .card .name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .card .sub{font-size:12px;color:var(--dim);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap;}
+    .card .sub span{display:inline-flex;align-items:center;gap:3px;}
+    .card .sub svg{width:12px;height:12px;opacity:.8;}
+    .chev{color:var(--dim);flex-shrink:0;}
+    .chev svg{width:18px;height:18px;}
+
+    /* Detay */
+    #detail{display:none;padding:4px 0 16px;}
+    #detail .head{display:flex;align-items:center;gap:12px;padding:12px 16px;}
+    #detail .back{background:var(--panel2);border:none;color:var(--txt);border-radius:10px;padding:8px;display:flex;cursor:pointer;}
+    #detail .back svg{width:18px;height:18px;}
+    #detail .dname{font-size:17px;font-weight:700;}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:4px 16px;}
+    .tile{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px;}
+    .tile .lbl{font-size:11px;color:var(--dim);display:flex;align-items:center;gap:5px;text-transform:uppercase;letter-spacing:.04em;}
+    .tile .lbl svg{width:13px;height:13px;}
+    .tile .val{font-size:18px;font-weight:700;margin-top:6px;}
+    .tile .val small{font-size:12px;color:var(--dim);font-weight:500;}
+    .full{grid-column:1 / -1;}
+    .btn{display:block;margin:14px 16px 0;padding:13px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer;text-align:center;}
+
+    #msg{position:absolute;top:64px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:9px 16px;border-radius:10px;font-size:13px;z-index:1200;box-shadow:0 4px 16px rgba(0,0,0,.4);display:none;max-width:88%;text-align:center;}
+    .empty{padding:28px 20px;text-align:center;color:var(--dim);font-size:13px;line-height:1.6;}
+
+    /* Harita işaretçi */
+    .pin{position:relative;}
+    .pin .glyph{width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.5);border:2px solid #fff;}
+    .pin.on .glyph{background:#2ecc71;} .pin.off .glyph{background:#ff5a5a;}
+    .pin .glyph svg{width:16px;height:16px;transform:rotate(45deg);color:#fff;}
+    .pin .ring{position:absolute;top:4px;left:1px;width:28px;height:28px;border-radius:50%;}
+    .pin.on .ring{animation:ring 1.8s infinite;}
+    @keyframes ring{0%{box-shadow:0 0 0 0 rgba(46,204,113,.5)}70%{box-shadow:0 0 0 16px rgba(46,204,113,0)}100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}}
+    .leaflet-popup-content-wrapper{background:var(--panel);color:var(--txt);border-radius:12px;}
+    .leaflet-popup-tip{background:var(--panel);}
+    .leaflet-popup-content{margin:12px 14px;font-size:13px;line-height:1.55;}
+    .leaflet-popup-content b{font-size:14px;}
   </style>
 </head>
 <body>
-  <div id="bar"><b>📍 Admin Paneli</b><span id="count">Yükleniyor…</span></div>
+<div id="app">
+  <div id="bar">
+    <div class="title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+      Kadobabacloud GPS
+    </div>
+    <div id="stat"><span class="pulse"></span><span id="statTxt">Yükleniyor…</span></div>
+  </div>
+
   <div id="map"></div>
-  <div id="msg" style="display:none"></div>
+  <div id="msg"></div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>
-    const qs = new URLSearchParams(location.search);
-    const FIREBASE = (qs.get('firebase') || '').replace(/\/+$/, '');
-    const SECRET = qs.get('secret') || '';
+  <div id="sheet">
+    <div class="handle"></div>
+    <div id="list">
+      <div class="sec-title">Cihazlar</div>
+      <div id="cards"><div class="empty">Yükleniyor…</div></div>
+    </div>
+    <div id="detail"></div>
+  </div>
+</div>
 
-    const map = L.map('map').setView([39.0, 35.0], 6);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19, attribution: '© OpenStreetMap'
-    }).addTo(map);
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const qs = new URLSearchParams(location.search);
+  const FIREBASE = (qs.get('firebase')||'').replace(/\/+$/,'');
+  const SECRET = qs.get('secret')||'';
 
-    const markers = {};
-    let firstFit = true;
+  // --- İkon kütüphanesi (inline SVG) ---
+  const I = {
+    phone:'<path d="M7 2h10v20H7z"/><circle cx="12" cy="18.5" r="1"/>',
+    battery:'<rect x="2" y="7" width="18" height="10" rx="2"/><path d="M22 10v4"/>',
+    walk:'<circle cx="13" cy="4" r="2"/><path d="M11 8l-2 5 2 2v5M13 9l3 2 3 1M9 13l-2 2"/>',
+    ruler:'<path d="M3 17L17 3l4 4L7 21z"/><path d="M7 9l2 2M11 5l2 2M9 15l2 2"/>',
+    speed:'<path d="M12 14l4-4"/><circle cx="12" cy="13" r="8"/><path d="M12 5V3"/>',
+    alt:'<path d="M3 20h18M7 20l5-12 5 12M9.5 14h5"/>',
+    target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    pin:'<path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+    chev:'<path d="M9 6l6 6-6 6"/>',
+    back:'<path d="M15 6l-6 6 6 6"/>'
+  };
+  const svg=(k,w)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${w?`width="${w}" height="${w}"`:''}>${I[k]}</svg>`;
 
-    function timeAgo(ts) {
-      if (!ts) return 'bilinmiyor';
-      const s = Math.floor((Date.now() - ts) / 1000);
-      if (s < 60) return s + ' sn önce';
-      if (s < 3600) return Math.floor(s/60) + ' dk önce';
-      if (s < 86400) return Math.floor(s/3600) + ' sa önce';
-      return Math.floor(s/86400) + ' gün önce';
-    }
-    function isOnline(ts) { return ts && (Date.now() - ts) < 120000; }
-    function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-    function showMsg(t){const m=document.getElementById('msg');m.textContent=t;m.style.display='block';}
-    function hideMsg(){document.getElementById('msg').style.display='none';}
+  const map = L.map('map',{zoomControl:true,attributionControl:false}).setView([39.0,35.0],6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
 
-    async function refresh() {
-      if (!FIREBASE) { showMsg('Firebase adresi ayarlı değil.'); return; }
-      let list;
-      try {
-        let url = FIREBASE + '/devices.json';
-        if (SECRET) url += '?auth=' + encodeURIComponent(SECRET);
-        const res = await fetch(url);
-        if (!res.ok) { showMsg('Firebase erişimi başarısız (' + res.status + '). Kuralları kontrol et.'); return; }
-        const obj = await res.json();  // { id: {label, last}, ... }  veya null
-        // Nesneyi listeye çevir
-        list = obj ? Object.entries(obj).map(([id, d]) => ({
-          id, label: (d && d.label) || id, last: (d && d.last) || null
-        })) : [];
-        hideMsg();
-      } catch (e) { showMsg('Bağlantı hatası. İnternet var mı?'); return; }
+  const markers={}; let firstFit=true; let selectedId=null; let cache=[];
 
-      const online = list.filter(d => d.last && isOnline(d.last.time)).length;
-      document.getElementById('count').textContent =
-        list.length + ' cihaz · ' + online + ' çevrimiçi';
+  function timeAgo(ts){if(!ts)return'bilinmiyor';const s=Math.floor((Date.now()-ts)/1000);
+    if(s<60)return s+' sn önce';if(s<3600)return Math.floor(s/60)+' dk önce';
+    if(s<86400)return Math.floor(s/3600)+' sa önce';return Math.floor(s/86400)+' gün önce';}
+  function fmtTime(ts){if(!ts)return'-';const d=new Date(ts);
+    return d.toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}
+  function isOnline(ts){return ts&&(Date.now()-ts)<120000;}
+  function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function kmh(ms){return ms==null?'-':(ms*3.6).toFixed(1);}
+  function showMsg(t){const m=document.getElementById('msg');m.textContent=t;m.style.display='block';}
+  function hideMsg(){document.getElementById('msg').style.display='none';}
 
-      const bounds = [];
-      list.forEach(d => {
-        if (!d.last) return;
-        const pos = [d.last.lat, d.last.lng];
-        bounds.push(pos);
-        const on = isOnline(d.last.time);
-        const bat = (d.last.battery != null && d.last.battery >= 0) ? 'Batarya: ' + d.last.battery + '%<br>' : '';
-        const popup =
-          '<b>' + esc(d.label || d.id) + '</b><br>' +
-          (on ? '🟢 Çevrimiçi' : '🔴 Çevrimdışı') + ' · ' + timeAgo(d.last.time) + '<br>' +
-          bat + 'Konum: ' + d.last.lat.toFixed(5) + ', ' + d.last.lng.toFixed(5);
-        if (markers[d.id]) {
-          markers[d.id].setLatLng(pos);
-          markers[d.id].getPopup().setContent(popup);
-        } else {
-          markers[d.id] = L.marker(pos).addTo(map).bindPopup(popup);
-        }
-      });
+  function makeIcon(on){
+    return L.divIcon({className:'',iconSize:[34,46],iconAnchor:[17,42],popupAnchor:[0,-40],
+      html:`<div class="pin ${on?'on':'off'}"><div class="ring"></div><div class="glyph">${svg('pin',16)}</div></div>`});
+  }
 
-      if (firstFit && bounds.length) {
-        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
-        firstFit = false;
-      }
-    }
+  async function fetchDevices(){
+    let url=FIREBASE+'/devices.json'; if(SECRET)url+='?auth='+encodeURIComponent(SECRET);
+    const res=await fetch(url);
+    if(!res.ok)throw new Error(res.status);
+    const obj=await res.json();
+    return obj?Object.entries(obj).map(([id,d])=>({id,label:(d&&d.label)||id,last:(d&&d.last)||null})):[];
+  }
 
-    refresh();
-    setInterval(refresh, 10000);
-  </script>
+  async function refresh(){
+    if(!FIREBASE){showMsg('Firebase adresi ayarlı değil.');return;}
+    let list;
+    try{ list=await fetchDevices(); hideMsg(); }
+    catch(e){ showMsg('Firebase erişilemedi ('+e.message+'). Adres/kural/anahtar kontrol.'); return; }
+    cache=list;
+
+    const online=list.filter(d=>d.last&&isOnline(d.last.time)).length;
+    document.getElementById('statTxt').textContent=list.length+' cihaz · '+online+' çevrimiçi';
+
+    // Haritada işaretçiler
+    const bounds=[];
+    const seen={};
+    list.forEach(d=>{ if(!d.last)return; seen[d.id]=1;
+      const pos=[d.last.lat,d.last.lng]; bounds.push(pos); const on=isOnline(d.last.time);
+      const pop=`<b>${esc(d.label)}</b><br>${on?'🟢 Çevrimiçi':'🔴 Çevrimdışı'} · ${timeAgo(d.last.time)}<br>`
+        +`🔋 ${d.last.battery>=0?d.last.battery+'%':'-'} &nbsp; 👣 ${d.last.steps||0} &nbsp; 📏 ${((d.last.distanceM||0)/1000).toFixed(2)} km<br>`
+        +`📍 ${d.last.lat.toFixed(5)}, ${d.last.lng.toFixed(5)}`;
+      if(markers[d.id]){ markers[d.id].setLatLng(pos).setIcon(makeIcon(on)); markers[d.id].getPopup().setContent(pop); }
+      else{ markers[d.id]=L.marker(pos,{icon:makeIcon(on)}).addTo(map).bindPopup(pop); }
+    });
+    Object.keys(markers).forEach(id=>{ if(!seen[id]){ map.removeLayer(markers[id]); delete markers[id]; }});
+
+    if(firstFit&&bounds.length){ map.fitBounds(bounds,{padding:[50,50],maxZoom:15}); firstFit=false; }
+
+    if(selectedId) renderDetail(selectedId); else renderList();
+  }
+
+  function renderList(){
+    document.getElementById('detail').style.display='none';
+    document.getElementById('list').style.display='block';
+    const el=document.getElementById('cards');
+    if(!cache.length){ el.innerHTML='<div class="empty">Henüz veri gönderen cihaz yok.<br>Takip edilen telefonda uygulamayı açıp Firebase adresini girip takibi başlatın.</div>'; return; }
+    el.innerHTML='';
+    cache.forEach(d=>{
+      const on=d.last&&isOnline(d.last.time);
+      const bat=d.last&&d.last.battery>=0?d.last.battery+'%':'-';
+      const km=d.last?((d.last.distanceM||0)/1000).toFixed(2):'0';
+      const steps=d.last?(d.last.steps||0):0;
+      const c=document.createElement('div'); c.className='card'+(d.id===selectedId?' sel':'');
+      c.innerHTML=`<div class="avatar">${svg('phone')}<div class="status ${on?'st-on':'st-off'}"></div></div>
+        <div class="info"><div class="name">${esc(d.label)}</div>
+        <div class="sub"><span>${svg('battery')}${bat}</span><span>${svg('walk')}${steps}</span><span>${svg('ruler')}${km} km</span>
+        <span>${d.last?timeAgo(d.last.time):'konum yok'}</span></div></div>
+        <div class="chev">${svg('chev')}</div>`;
+      c.onclick=()=>{ selectedId=d.id; if(d.last)map.setView([d.last.lat,d.last.lng],16); if(markers[d.id])markers[d.id].openPopup(); renderDetail(d.id); };
+      el.appendChild(c);
+    });
+  }
+
+  function tile(icon,label,val,unit){
+    return `<div class="tile"><div class="lbl">${svg(icon)}${label}</div><div class="val">${val}${unit?` <small>${unit}</small>`:''}</div></div>`;
+  }
+
+  function renderDetail(id){
+    const d=cache.find(x=>x.id===id); if(!d){ selectedId=null; renderList(); return; }
+    document.getElementById('list').style.display='none';
+    const box=document.getElementById('detail'); box.style.display='block';
+    const L0=d.last; const on=L0&&isOnline(L0.time);
+    if(!L0){ box.innerHTML=`<div class="head"><button class="back">${svg('back')}</button><div class="dname">${esc(d.label)}</div></div><div class="empty">Bu cihazdan henüz konum gelmedi.</div>`; box.querySelector('.back').onclick=()=>{selectedId=null;renderList();}; return; }
+    box.innerHTML=
+      `<div class="head"><button class="back">${svg('back')}</button>
+        <div><div class="dname">${esc(d.label)}</div>
+        <div style="font-size:12px;color:${on?'#2ecc71':'#ff5a5a'};margin-top:2px">${on?'🟢 Çevrimiçi':'🔴 Çevrimdışı'} · ${timeAgo(L0.time)}</div></div></div>
+      <div class="grid">
+        ${tile('walk','Adım',L0.steps||0,'adım')}
+        ${tile('ruler','Yürünen yol',((L0.distanceM||0)/1000).toFixed(2),'km')}
+        ${tile('battery','Batarya',L0.battery>=0?L0.battery:'-','%')}
+        ${tile('speed','Hız',kmh(L0.speed),'km/s')}
+        ${tile('alt','Rakım',L0.altitude!=null?Math.round(L0.altitude):'-','m')}
+        ${tile('target','Hassasiyet',L0.accuracy!=null?Math.round(L0.accuracy):'-','m')}
+        <div class="tile full"><div class="lbl">${svg('pin')}Konum</div><div class="val" style="font-size:15px">${L0.lat.toFixed(5)}, ${L0.lng.toFixed(5)}</div></div>
+        <div class="tile full"><div class="lbl">${svg('clock')}Son güncelleme</div><div class="val" style="font-size:15px">${fmtTime(L0.time)}</div></div>
+      </div>
+      <button class="btn" id="goMap">Haritada göster</button>`;
+    box.querySelector('.back').onclick=()=>{ selectedId=null; renderList(); };
+    box.querySelector('#goMap').onclick=()=>{ map.setView([L0.lat,L0.lng],17); if(markers[id])markers[id].openPopup(); };
+  }
+
+  refresh();
+  setInterval(refresh,10000);
+</script>
 </body>
 </html>

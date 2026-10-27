@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.gpstracker">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Konum izinleri -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -10,6 +9,12 @@
     <!-- Sunucuya konum göndermek için ağ izinleri -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Adım sayımı için aktivite tanıma izni (Android 10+) -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-feature
+        android:name="android.hardware.sensor.stepcounter"
+        android:required="false" />
 
     <!-- Arka planda çalışma izinleri -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />

@@ -21,6 +21,8 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      # ubuntu-latest sunucusunda Android SDK (platform-34 + build-tools) hazır gelir;
+      # ayrı bir kurulum adımına gerek yok.
       - name: APK derle (debug)
         run: |
           chmod +x gradlew

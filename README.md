@@ -76,10 +76,21 @@ Artık telefon, konumunu WiFi ya da mobil veri üzerinden Firebase'e gönderir.
 
 ---
 
-## 5) Cihazları Gör — Uygulama İçi Admin Paneli
+## 5) Cihazları Gör — Uygulama İçi Admin Paneli (profesyonel)
 1. Aynı uygulamada (seninkinde) Firebase adresini gir.
-2. **📍 Admin Paneli (cihazları gör)** → **admin / 12345** ile giriş.
-3. İzin verdiğin tüm cihazlar haritada canlı belirir (çevrimiçi/çevrimdışı + batarya). ✅
+2. **Admin Paneli — Cihazları Gör** → **admin / 12345** ile giriş.
+3. Koyu temalı profesyonel panel açılır:
+   - Tam ekran harita, çevrimiçi cihazlar için **nabız atan özel işaretçi**.
+   - Altta cihaz kartları: her birinde **pil, adım, yürünen km, son görülme**.
+   - Bir cihaza dokununca **detay ekranı**: adım, yürünen yol (km), batarya, hız (km/s),
+     rakım (m), hassasiyet (m), tam koordinat ve son güncelleme zamanı — ikonlarıyla.
+
+## Yeni özellikler
+- **Adım sayısı:** Takip edilen telefonun adım sensöründen, takibe başladıktan sonraki adımlar.
+- **Yürünen mesafe (km):** GPS noktalarından hesaplanan gerçek yol; GPS gürültüsü ayıklanır.
+- **Profesyonel arayüz:** Yeni uygulama ikonu, koyu tema, kart tasarımı ve başlıkta **menü** (⋮):
+  Cihaz ID kopyalama, pil optimizasyonu ayarlarına kısayol, Hakkında.
+- **Detaylı harita:** Haritada ve kartlarda cihazın tüm bilgileri yazılı.
 
 ---
 
@@ -132,7 +143,8 @@ private static final String PANEL_PASS = "12345"; // <-- değiştir
 ## Teknik Özet
 - **Dil:** Java (Android)
 - **Veri yolu:** Firebase Realtime Database **REST** (SDK / google-services.json gerekmez)
-- **Yazılan yer:** `/devices/{cihazId}` → `{ label, last:{lat,lng,...} }`
+- **Yazılan yer:** `/devices/{cihazId}` → `{ label, last:{lat,lng,accuracy,speed,altitude,battery,time,steps,distanceM} }`
+- **Adım:** `Sensor.TYPE_STEP_COUNTER` — **Mesafe:** ardışık konumların haversine toplamı
 - **Konum:** FusedLocationProvider, pil dengeli öncelik
 - **Arka plan:** Foreground service + `START_STICKY` + boot receiver
 - **Çevrimdışı:** Konumlar yerel `locations.log`'a da yazılır (veri kaybı olmaz)

@@ -1,6 +1,7 @@
 package com.example.gpstracker;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,15 +12,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 /**
  * Uygulama içi Admin Paneli.
  *  - admin / 12345 ile giriş (uygulama içinde kontrol edilir)
  *  - Giriş sonrası, assets içindeki harita sayfasını WebView'de açar
  *    ve sunucudan cihazları çekip haritada gösterir.
  */
-public class AdminActivity extends AppCompatActivity {
+public class AdminActivity extends Activity {
 
     // Panel girişi (istersen burayı değiştir)
     private static final String PANEL_USER = "admin";
