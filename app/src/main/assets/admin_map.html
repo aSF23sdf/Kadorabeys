@@ -231,27 +231,6 @@
   L.control.scale({imperial:false,position:'bottomleft'}).addTo(map);
   map.on('baselayerchange',e=>store('kb_layer',e.name));
 
-  // ---------- Yaya rotası (karakter sokak üzerinden yürüsün) ----------
-  const routeCache={};
-  async function footPath(a,b){
-    const key=[a.lat,a.lng,b.lat,b.lng].map(v=>v.toFixed(5)).join(',');
-    if(routeCache[key]) return routeCache[key];
-    const straight=[a,b];
-    const dist=a.distanceTo(b);
-    if(dist<20||dist>3000) return straight;
-    try{
-      const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),4000);
-      const url=`https://routing.openstreetmap.de/routed-foot/route/v1/driving/${a.lng},${a.lat};${b.lng},${b.lat}?overview=full&geometries=geojson`;
-      const r=await fetch(url,{signal:ctl.signal}); clearTimeout(t);
-      const j=await r.json();
-      const c=j&&j.routes&&j.routes[0]&&j.routes[0].geometry.coordinates;
-      if(!c||c.length<2) return straight;
-      const path=[a,...c.map(p=>L.latLng(p[1],p[0])),b];
-      // Yol çok dolambaçlıysa (yanlış yola oturduysa) düz çizgiye dön
-      if(pathLen(path)>dist*2.5+150) return straight;
-      routeCache[key]=path; return path;
-    }catch(e){ return straight; }
-  }
   function pathLen(p){let s=0;for(let i=1;i<p.length;i++)s+=p[i-1].distanceTo(p[i]);return s;}
   function along(p,cum,f){
     const total=cum[cum.length-1]; if(total<=0) return {pos:p[p.length-1],i:p.length-2};
@@ -308,18 +287,15 @@
     st.acc.setRadius(Math.max(L0.accuracy||0,3));
 
     const from=st.marker.getLatLng(), dist=from.distanceTo(target);
-    // GPS titremesi: hassasiyet çemberi içindeki küçük oynamalarda karakteri yerinden oynatma
-    if(dist<Math.max(6,(L0.accuracy||0)*0.5)){ setLook(st,{emo:modeOf(L0.speed).emo,moving:false}); return; }
-    // Çok büyük atlama (uzun süre sinyal yok): yürütmeden yerine koy
-    if(dist>5000){ st.anim=null; st.marker.setLatLng(target); st.acc.setLatLng(target); st.trail.addLatLng(target); return; }
-
-    const path=await footPath(from,target);
-    const len=pathLen(path);
-    const v=(L0.speed&&L0.speed>0.4)?L0.speed:1.35;               // yürüme hızı ~1.35 m/s
-    const dur=Math.min(Math.max(len/v*1000,1500),11000);          // bir sonraki konum gelmeden varsın
-    st.anim={path,cum:cumOf(path),start:performance.now(),dur};
-    path.slice(1).forEach(p=>st.trail.addLatLng(p));
+    // GPS titremesi: hassasiyet çemberi içindeki küçük oynamalarda gerçek noktaya otur
+    if(dist<Math.max(6,(L0.accuracy||0)*0.5)){ st.marker.setLatLng(target); st.acc.setLatLng(target); setLook(st,{emo:modeOf(L0.speed).emo,moving:false}); return; }
+    // Trail'i yalnızca gerçek konumlarla çiz (icat edilen ara nokta yok)
+    st.trail.addLatLng(target);
     const tl=st.trail.getLatLngs(); if(tl.length>600) st.trail.setLatLngs(tl.slice(-600));
+    const faceLeft=target.lng<from.lng;
+    // Büyük atlama → anında gerçek noktaya koy. Küçük adım → düz çizgide çok kısa kayma.
+    if(dist>250){ st.anim=null; st.marker.setLatLng(target); st.acc.setLatLng(target); setLook(st,{emo:modeOf(L0.speed).emo,moving:false,faceLeft}); return; }
+    st.anim={from,to:target,start:performance.now(),dur:Math.min(Math.max(dist/1.6*1000,350),1500),faceLeft};
   }
 
   // Animasyon döngüsü
@@ -327,12 +303,12 @@
   function frame(now){
     Object.entries(devs).forEach(([id,st])=>{
       if(!st.anim||(replay&&replay.st===st)) return;
-      const a=st.anim, f=(now-a.start)/a.dur;
-      const {pos,i}=along(a.path,a.cum,f);
+      const a=st.anim; let f=(now-a.start)/a.dur; if(f>1) f=1;
+      const e=f<.5?2*f*f:1-Math.pow(-2*f+2,2)/2;   // yumuşak giriş-çıkış, düz çizgi
+      const pos=L.latLng(a.from.lat+(a.to.lat-a.from.lat)*e, a.from.lng+(a.to.lng-a.from.lng)*e);
       st.marker.setLatLng(pos); st.acc.setLatLng(pos);
-      const p0=a.path[i], p1=a.path[i+1]||a.path[i];
-      setLook(st,{moving:f<1,emo:f<1?modeOf(st.speed>0.4?st.speed:1.35).emo:modeOf(st.speed).emo,faceLeft:p1.lng<p0.lng});
-      if(f>=1) st.anim=null;
+      setLook(st,{moving:f<1,emo:modeOf(st.speed>0.4?st.speed:1.35).emo,faceLeft:a.faceLeft});
+      if(f>=1){ st.anim=null; setLook(st,{moving:false,emo:modeOf(st.speed).emo}); }
       if(follow&&id===selectedId&&now-lastPan>250){ map.panTo(pos,{animate:false}); lastPan=now; }
     });
     if(replay) replayFrame(now);
