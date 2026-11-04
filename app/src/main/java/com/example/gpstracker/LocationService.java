@@ -33,8 +33,8 @@ public class LocationService extends Service
     private static final int NOTIFICATION_ID = 1001;
 
     // --- PİL / HASSASİYET AYARLARI ---
-    private static final long UPDATE_INTERVAL_MS = 10_000L; // 10 sn (haritada akıcı yürüyüş için)
-    private static final float MIN_DISPLACEMENT_M = 5f;     // 5 m
+    private static final long UPDATE_INTERVAL_MS = 1_000L;  // 1 sn (anlık/sürekli takip)
+    private static final float MIN_DISPLACEMENT_M = 0f;     // her hareket
 
     private LocationManager locationManager;
     private LocationRepository repository;
@@ -44,6 +44,7 @@ public class LocationService extends Service
     // Adım sayacı
     private SensorManager sensorManager;
     private Sensor stepSensor;
+    private long lastFixTime = 0;       // en son kabul edilen fix zamanı (doğruluk filtresi için)
     private long sessionSteps = 0;      // bu takip oturumunda atılan adım
     private float stepBaseline = -1;    // sensörün ilk okuması
 
@@ -134,11 +135,19 @@ public class LocationService extends Service
         if (loc == null) return;
         long time = System.currentTimeMillis();
 
-        // Mesafe birikimi: önceki konumla arasındaki gerçek yolu ekle.
-        // Çok küçük sıçramaları (GPS gürültüsü) ve ışınlanmaları ayıkla.
-        if (lastLocation != null) {
+        // Minimum hata: düşük doğruluklu (çoğunlukla ağ tabanlı, ~yüzlerce m) fix'leri,
+        // yakın zamanda zaten iyi bir GPS fix'i aldıysak ele — haritayı zıplatmasın.
+        if (loc.hasAccuracy() && loc.getAccuracy() > 35f
+                && lastLocation != null && (time - lastFixTime) < 15_000L) {
+            return;
+        }
+        lastFixTime = time;
+
+        // Mesafe birikimi: gerçek yolu ekle; GPS gürültüsünü ve ışınlanmayı ayıkla.
+        // 1 sn'de yürüme ~1.4 m olduğundan eşik düşük, ama doğruluk kötüyse sayma.
+        if (lastLocation != null && (!loc.hasAccuracy() || loc.getAccuracy() <= 35f)) {
             float d = lastLocation.distanceTo(loc);
-            if (d >= 5f && d <= 2000f) {
+            if (d >= 2f && d <= 500f) {
                 totalDistanceM += d;
                 prefs.edit().putFloat(Prefs.TOTAL_DISTANCE_M, (float) totalDistanceM).apply();
             }

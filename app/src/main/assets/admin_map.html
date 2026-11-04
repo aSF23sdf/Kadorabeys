@@ -288,7 +288,7 @@
 
     const from=st.marker.getLatLng(), dist=from.distanceTo(target);
     // GPS titremesi: hassasiyet çemberi içindeki küçük oynamalarda gerçek noktaya otur
-    if(dist<Math.max(6,(L0.accuracy||0)*0.5)){ st.marker.setLatLng(target); st.acc.setLatLng(target); setLook(st,{emo:modeOf(L0.speed).emo,moving:false}); return; }
+    if(dist<Math.max(3,(L0.accuracy||0)*0.35)){ st.marker.setLatLng(target); st.acc.setLatLng(target); setLook(st,{emo:modeOf(L0.speed).emo,moving:false}); return; }
     // Trail'i yalnızca gerçek konumlarla çiz (icat edilen ara nokta yok)
     st.trail.addLatLng(target);
     const tl=st.trail.getLatLngs(); if(tl.length>600) st.trail.setLatLngs(tl.slice(-600));
@@ -581,7 +581,7 @@
   };
 
   refresh();
-  setInterval(refresh,5000);
+  setInterval(refresh,2000);
 </script>
 </body>
 </html>
