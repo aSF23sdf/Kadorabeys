@@ -316,21 +316,48 @@
   }
   requestAnimationFrame(frame);
 
-  async function refresh(){
-    if(!FIREBASE){showMsg('Firebase adresi ayarlı değil.');return;}
-    let list;
-    try{ list=await fetchDevices(); hideMsg(); }
-    catch(e){ showMsg('Firebase erişilemedi ('+e.message+'). Adres/kural/anahtar kontrol.'); return; }
+  function applyList(list){
     cache=list;
     const online=list.filter(d=>d.last&&isOnline(d.last.time)).length;
     document.getElementById('statTxt').textContent=list.length+' cihaz · '+online+' çevrimiçi';
-
     const bounds=[], seen={};
     for(const d of list){ if(!d.last) continue; seen[d.id]=1; bounds.push([d.last.lat,d.last.lng]); onNewFix(d); }
     Object.keys(devs).forEach(id=>{ if(!seen[id]){ const s=devs[id]; [s.marker,s.acc,s.trail].forEach(l=>map.removeLayer(l)); delete devs[id]; }});
     if(firstFit&&bounds.length){ map.fitBounds(bounds,{padding:[60,60],maxZoom:18}); firstFit=false; }
-
     if(selectedId) renderLive(); else renderList();
+  }
+  function listFromTree(t){ return Object.entries(t||{}).map(([id,d])=>({id,label:(d&&d.label)||id,last:(d&&d.last)||null})); }
+
+  // Yedek yoklama (akış çalışmazsa)
+  async function poll(){
+    if(!FIREBASE){showMsg('Firebase adresi ayarlı değil.');return;}
+    try{ const l=await fetchDevices(); hideMsg(); applyList(l); }
+    catch(e){ showMsg('Firebase erişilemedi ('+e.message+'). Adres/kural/anahtar kontrol.'); }
+  }
+
+  // ---------- Canlı akış: Firebase stream (EventSource) → veri değişince anında panele iter ----------
+  let tree={}, es=null, streamOk=false;
+  function applyStream(path,data,patch){
+    const parts=String(path).split('/').filter(Boolean);
+    if(!parts.length){ tree=(data&&!patch)?data:(patch?Object.assign(tree,data||{}):{}); return; }
+    let o=tree;
+    for(let i=0;i<parts.length-1;i++){ if(typeof o[parts[i]]!=='object'||!o[parts[i]]) o[parts[i]]={}; o=o[parts[i]]; }
+    const k=parts[parts.length-1];
+    if(data===null) delete o[k];
+    else if(patch&&typeof data==='object'&&!Array.isArray(data)) o[k]=Object.assign((typeof o[k]==='object'&&o[k])?o[k]:{},data);
+    else o[k]=data;
+  }
+  function startStream(){
+    if(!FIREBASE||es) return;
+    try{
+      es=new EventSource(fbUrl('/devices'));
+      const onEv=patch=>e=>{ try{ const m=JSON.parse(e.data);
+        if(m&&m.path!==undefined){ applyStream(m.path,m.data,patch); streamOk=true; hideMsg(); applyList(listFromTree(tree)); } }catch(_){} };
+      es.addEventListener('put',onEv(false));
+      es.addEventListener('patch',onEv(true));
+      es.addEventListener('keep-alive',()=>{ streamOk=true; });
+      es.onerror=()=>{ streamOk=false; try{es.close();}catch(_){ } es=null; setTimeout(startStream,3000); };
+    }catch(e){ es=null; }
   }
 
   // ---------- Liste ----------
@@ -580,8 +607,9 @@
     setTimeout(()=>map.invalidateSize(),50);
   };
 
-  refresh();
-  setInterval(refresh,2000);
+  startStream();      // canlı akış (anlık itme)
+  poll();             // ilk doluş
+  setInterval(()=>{ if(!streamOk) poll(); },5000);   // akış koptuysa yedek yoklama
 </script>
 </body>
 </html>
