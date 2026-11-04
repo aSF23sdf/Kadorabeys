@@ -17,7 +17,7 @@
 
     /* Üst bar */
     #bar{
-      display:flex;align-items:center;justify-content:space-between;
+      display:flex;align-items:center;justify-content:space-between;gap:8px;
       padding:12px 16px;background:linear-gradient(135deg,#0d47a1,#2f81f7);
       box-shadow:0 2px 10px rgba(0,0,0,.4);z-index:1000;
     }
@@ -27,27 +27,32 @@
     #stat .pulse{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(46,204,113,.7);animation:p 1.8s infinite;}
     @keyframes p{0%{box-shadow:0 0 0 0 rgba(46,204,113,.6)}70%{box-shadow:0 0 0 7px rgba(46,204,113,0)}100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}}
 
-    #map{flex:1;width:100%;background:#0b1220;}
+    #mapWrap{flex:1;position:relative;min-height:0;}
+    #map{position:absolute;inset:0;background:#dfe6ee;}
+    #app.big #sheet{display:none;}
+
+    /* Harita üstü düğmeler */
+    .mbtn{position:absolute;z-index:900;background:var(--panel);color:var(--txt);border:1px solid var(--line);
+      border-radius:12px;padding:9px 12px;font-size:13px;font-weight:600;box-shadow:0 3px 12px rgba(0,0,0,.35);cursor:pointer;}
+    #btnBig{right:12px;bottom:14px;}
+    #btnFollow{right:12px;bottom:60px;}
+    #btnFollow.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+    #clock{white-space:nowrap;position:absolute;z-index:900;left:50%;top:10px;transform:translateX(-50%);background:rgba(18,26,43,.92);
+      color:#fff;border-radius:12px;padding:7px 14px;font-size:14px;font-weight:700;display:none;box-shadow:0 3px 12px rgba(0,0,0,.35);}
+    #clock small{font-weight:500;color:var(--dim);margin-left:6px;}
 
     /* Alt panel */
     #sheet{
       background:var(--panel);border-top:1px solid var(--line);
-      max-height:46%;overflow-y:auto;box-shadow:0 -4px 20px rgba(0,0,0,.5);
+      max-height:48%;overflow-y:auto;box-shadow:0 -4px 20px rgba(0,0,0,.5);
     }
     #sheet .handle{width:40px;height:4px;background:var(--line);border-radius:3px;margin:8px auto 4px;}
-    .sec-title{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:6px 16px 8px;font-weight:700;}
+    .sec-title{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:10px 16px 8px;font-weight:700;}
 
-    .card{
-      display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);
-      cursor:pointer;transition:background .15s;
-    }
+    .card{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);cursor:pointer;}
     .card:active,.card.sel{background:var(--panel2);}
-    .avatar{
-      width:42px;height:42px;border-radius:12px;flex-shrink:0;
-      display:flex;align-items:center;justify-content:center;
-      background:linear-gradient(135deg,#2f81f7,#1557b0);position:relative;
-    }
-    .avatar svg{width:22px;height:22px;color:#fff;}
+    .avatar{width:42px;height:42px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,#2f81f7,#1557b0);position:relative;font-size:24px;}
     .avatar .status{position:absolute;right:-2px;bottom:-2px;width:13px;height:13px;border-radius:50%;border:2px solid var(--panel);}
     .st-on{background:var(--green);} .st-off{background:var(--red);}
     .card .info{flex:1;min-width:0;}
@@ -59,35 +64,68 @@
     .chev svg{width:18px;height:18px;}
 
     /* Detay */
-    #detail{display:none;padding:4px 0 16px;}
+    #detail{display:none;padding:4px 0 18px;}
     #detail .head{display:flex;align-items:center;gap:12px;padding:12px 16px;}
     #detail .back{background:var(--panel2);border:none;color:var(--txt);border-radius:10px;padding:8px;display:flex;cursor:pointer;}
     #detail .back svg{width:18px;height:18px;}
     #detail .dname{font-size:17px;font-weight:700;}
+    .addr{margin:0 16px 10px;padding:10px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;font-size:13px;line-height:1.45;}
+    .addr b{display:block;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:4px 16px;}
+    .grid.g3{grid-template-columns:1fr 1fr 1fr;}
     .tile{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px;}
     .tile .lbl{font-size:11px;color:var(--dim);display:flex;align-items:center;gap:5px;text-transform:uppercase;letter-spacing:.04em;}
     .tile .lbl svg{width:13px;height:13px;}
     .tile .val{font-size:18px;font-weight:700;margin-top:6px;}
     .tile .val small{font-size:12px;color:var(--dim);font-weight:500;}
     .full{grid-column:1 / -1;}
-    .btn{display:block;margin:14px 16px 0;padding:13px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer;text-align:center;}
+    .btn{display:block;margin:14px 16px 0;padding:13px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;cursor:pointer;text-align:center;width:calc(100% - 32px);}
+    .btn.ghost{background:var(--panel2);border:1px solid var(--line);color:var(--txt);}
+    .btn.danger{background:transparent;border:1px solid var(--red);color:var(--red);font-size:13px;padding:10px;}
 
-    #msg{position:absolute;top:64px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:9px 16px;border-radius:10px;font-size:13px;z-index:1200;box-shadow:0 4px 16px rgba(0,0,0,.4);display:none;max-width:88%;text-align:center;}
+    /* Rota & oynatıcı */
+    .chips{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px;}
+    .chip{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:20px;padding:7px 12px;font-size:13px;cursor:pointer;}
+    .chip.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
+    .player{margin:12px 16px 0;padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:14px;}
+    .prow{display:flex;align-items:center;gap:10px;}
+    .play{width:46px;height:46px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:18px;cursor:pointer;flex-shrink:0;}
+    .ptime{flex:1;min-width:0;}
+    .ptime .t{font-size:16px;font-weight:700;}
+    .ptime .s{font-size:12px;color:var(--dim);margin-top:2px;}
+    .player select{background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px;font-size:13px;}
+    .player input[type=range]{width:100%;margin-top:12px;accent-color:var(--accent);}
+    .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--dim);padding:10px 16px 0;}
+    .legend i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:4px;vertical-align:middle;}
+
+    #msg{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:9px 16px;border-radius:10px;font-size:13px;z-index:1200;box-shadow:0 4px 16px rgba(0,0,0,.4);display:none;max-width:88%;text-align:center;}
     .empty{padding:28px 20px;text-align:center;color:var(--dim);font-size:13px;line-height:1.6;}
 
-    /* Harita işaretçi */
-    .pin{position:relative;}
-    .pin .glyph{width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.5);border:2px solid #fff;}
-    .pin.on .glyph{background:#2ecc71;} .pin.off .glyph{background:#ff5a5a;}
-    .pin .glyph svg{width:16px;height:16px;transform:rotate(45deg);color:#fff;}
-    .pin .ring{position:absolute;top:4px;left:1px;width:28px;height:28px;border-radius:50%;}
-    .pin.on .ring{animation:ring 1.8s infinite;}
-    @keyframes ring{0%{box-shadow:0 0 0 0 rgba(46,204,113,.5)}70%{box-shadow:0 0 0 16px rgba(46,204,113,0)}100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}}
+    /* Yürüyen karakter */
+    .walker{position:relative;width:60px;height:70px;pointer-events:auto;}
+    .walker .wname{position:absolute;left:50%;top:0;transform:translateX(-50%);white-space:nowrap;
+      background:#fff;color:#10213d;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;
+      box-shadow:0 2px 6px rgba(0,0,0,.35);border:2px solid var(--green);}
+    .walker.off .wname{border-color:var(--red);}
+    .walker .wbody{position:absolute;left:13px;top:20px;width:34px;height:38px;display:flex;align-items:flex-end;justify-content:center;}
+    .walker .wemo{font-size:32px;line-height:1;display:block;filter:drop-shadow(0 2px 2px rgba(0,0,0,.45));}
+    .walker.moving .wemo{animation:step .46s ease-in-out infinite;}
+    .walker .wshadow{position:absolute;left:18px;top:56px;width:24px;height:7px;border-radius:50%;background:rgba(0,0,0,.35);}
+    .walker.moving .wshadow{animation:shadow .46s ease-in-out infinite;}
+    .walker.off .wemo{filter:grayscale(1) opacity(.7);}
+    @keyframes step{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-4px) rotate(3deg)}}
+    @keyframes shadow{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.75)}}
+    .stopIco{width:26px;height:26px;border-radius:50%;background:#f5a623;border:2px solid #fff;color:#fff;font-size:12px;font-weight:700;
+      display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.4);}
+    .endIco{width:24px;height:24px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+
     .leaflet-popup-content-wrapper{background:var(--panel);color:var(--txt);border-radius:12px;}
     .leaflet-popup-tip{background:var(--panel);}
     .leaflet-popup-content{margin:12px 14px;font-size:13px;line-height:1.55;}
     .leaflet-popup-content b{font-size:14px;}
+    .leaflet-control-layers{border-radius:12px !important;}
+    .leaflet-control-layers-expanded{background:var(--panel);color:var(--txt);}
+    .leaflet-control-attribution{font-size:9px;}
   </style>
 </head>
 <body>
@@ -100,8 +138,13 @@
     <div id="stat"><span class="pulse"></span><span id="statTxt">Yükleniyor…</span></div>
   </div>
 
-  <div id="map"></div>
-  <div id="msg"></div>
+  <div id="mapWrap">
+    <div id="map"></div>
+    <div id="clock"></div>
+    <div id="msg"></div>
+    <button class="mbtn" id="btnFollow">🎯 Takip et</button>
+    <button class="mbtn" id="btnBig">⛶ Büyüt</button>
+  </div>
 
   <div id="sheet">
     <div class="handle"></div>
@@ -109,7 +152,14 @@
       <div class="sec-title">Cihazlar</div>
       <div id="cards"><div class="empty">Yükleniyor…</div></div>
     </div>
-    <div id="detail"></div>
+    <div id="detail">
+      <div id="dHead"></div>
+      <div id="dAddr"></div>
+      <div id="dLive"></div>
+      <div class="sec-title" style="margin-top:12px">Rota &amp; yürüyüş simülasyonu</div>
+      <div class="chips" id="ranges"></div>
+      <div id="route"></div>
+    </div>
   </div>
 </div>
 
@@ -118,10 +168,10 @@
   const qs = new URLSearchParams(location.search);
   const FIREBASE = (qs.get('firebase')||'').replace(/\/+$/,'');
   const SECRET = qs.get('secret')||'';
+  const AUTH = SECRET ? 'auth='+encodeURIComponent(SECRET) : '';
 
-  // --- İkon kütüphanesi (inline SVG) ---
+  // ---------- İkonlar ----------
   const I = {
-    phone:'<path d="M7 2h10v20H7z"/><circle cx="12" cy="18.5" r="1"/>',
     battery:'<rect x="2" y="7" width="18" height="10" rx="2"/><path d="M22 10v4"/>',
     walk:'<circle cx="13" cy="4" r="2"/><path d="M11 8l-2 5 2 2v5M13 9l3 2 3 1M9 13l-2 2"/>',
     ruler:'<path d="M3 17L17 3l4 4L7 21z"/><path d="M7 9l2 2M11 5l2 2M9 15l2 2"/>',
@@ -131,38 +181,164 @@
     clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     pin:'<path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
     chev:'<path d="M9 6l6 6-6 6"/>',
-    back:'<path d="M15 6l-6 6 6 6"/>'
+    back:'<path d="M15 6l-6 6 6 6"/>',
+    pause:'<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>'
   };
   const svg=(k,w)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${w?`width="${w}" height="${w}"`:''}>${I[k]}</svg>`;
 
-  const map = L.map('map',{zoomControl:true,attributionControl:false}).setView([39.0,35.0],6);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
-
-  const markers={}; let firstFit=true; let selectedId=null; let cache=[];
-
+  // ---------- Yardımcılar ----------
   function timeAgo(ts){if(!ts)return'bilinmiyor';const s=Math.floor((Date.now()-ts)/1000);
     if(s<60)return s+' sn önce';if(s<3600)return Math.floor(s/60)+' dk önce';
     if(s<86400)return Math.floor(s/3600)+' sa önce';return Math.floor(s/86400)+' gün önce';}
-  function fmtTime(ts){if(!ts)return'-';const d=new Date(ts);
-    return d.toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}
-  function isOnline(ts){return ts&&(Date.now()-ts)<120000;}
+  function fmtTime(ts){if(!ts)return'-';return new Date(ts).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});}
+  function fmtClock(ts){return new Date(ts).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+  function fmtDur(ms){const m=Math.round(ms/60000);if(m<60)return m+' dk';return Math.floor(m/60)+' sa '+(m%60)+' dk';}
+  function isOnline(ts){return ts&&(Date.now()-ts)<90000;}
   function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-  function kmh(ms){return ms==null?'-':(ms*3.6).toFixed(1);}
+  function kmh(ms){return ms==null||ms<0?'-':(ms*3.6).toFixed(1);}
   function showMsg(t){const m=document.getElementById('msg');m.textContent=t;m.style.display='block';}
   function hideMsg(){document.getElementById('msg').style.display='none';}
+  function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){return null;}}
+  function fbUrl(path,extra){const q=[extra,AUTH].filter(Boolean).join('&');return FIREBASE+path+'.json'+(q?'?'+q:'');}
 
-  function makeIcon(on){
-    return L.divIcon({className:'',iconSize:[34,46],iconAnchor:[17,42],popupAnchor:[0,-40],
-      html:`<div class="pin ${on?'on':'off'}"><div class="ring"></div><div class="glyph">${svg('pin',16)}</div></div>`});
+  // Hıza göre karakter: duruyor / yürüyor / koşuyor / bisiklet / araç
+  function modeOf(ms){
+    if(ms==null||ms<0.4) return {emo:'🧍',name:'Duruyor',color:'#7f8ea3'};
+    if(ms<2.6) return {emo:'🚶',name:'Yürüyor',color:'#2ecc71'};
+    if(ms<5)   return {emo:'🏃',name:'Koşuyor',color:'#16a3c9'};
+    if(ms<8.5) return {emo:'🚴',name:'Bisiklet',color:'#f5a623'};
+    return {emo:'🚗',name:'Araçta',color:'#ff5a5a'};
   }
 
+  // ---------- Harita & katmanlar ----------
+  const map = L.map('map',{zoomControl:true,attributionControl:true,maxZoom:20}).setView([39.0,35.0],6);
+  map.attributionControl.setPrefix('');
+  const opt={maxZoom:20,maxNativeZoom:19};
+  const layers={
+    'Sokak (detaylı, isimli)': L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{...opt,subdomains:'abcd',attribution:'© OpenStreetMap © CARTO'}),
+    'Yaya yolları (OSM)': L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{...opt,attribution:'© OpenStreetMap'}),
+    'Uydu + isimler': L.layerGroup([
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{...opt,attribution:'Esri'}),
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',opt),
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',opt)
+    ]),
+    'Uydu (sade)': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{...opt,attribution:'Esri'}),
+    'Arazi / patika': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{...opt,maxNativeZoom:17,attribution:'© OpenTopoMap'})
+  };
+  let baseName=store('kb_layer'); if(!layers[baseName]) baseName='Sokak (detaylı, isimli)';
+  layers[baseName].addTo(map);
+  L.control.layers(layers,null,{position:'topright'}).addTo(map);
+  L.control.scale({imperial:false,position:'bottomleft'}).addTo(map);
+  map.on('baselayerchange',e=>store('kb_layer',e.name));
+
+  // ---------- Yaya rotası (karakter sokak üzerinden yürüsün) ----------
+  const routeCache={};
+  async function footPath(a,b){
+    const key=[a.lat,a.lng,b.lat,b.lng].map(v=>v.toFixed(5)).join(',');
+    if(routeCache[key]) return routeCache[key];
+    const straight=[a,b];
+    const dist=a.distanceTo(b);
+    if(dist<20||dist>3000) return straight;
+    try{
+      const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),4000);
+      const url=`https://routing.openstreetmap.de/routed-foot/route/v1/driving/${a.lng},${a.lat};${b.lng},${b.lat}?overview=full&geometries=geojson`;
+      const r=await fetch(url,{signal:ctl.signal}); clearTimeout(t);
+      const j=await r.json();
+      const c=j&&j.routes&&j.routes[0]&&j.routes[0].geometry.coordinates;
+      if(!c||c.length<2) return straight;
+      const path=[a,...c.map(p=>L.latLng(p[1],p[0])),b];
+      // Yol çok dolambaçlıysa (yanlış yola oturduysa) düz çizgiye dön
+      if(pathLen(path)>dist*2.5+150) return straight;
+      routeCache[key]=path; return path;
+    }catch(e){ return straight; }
+  }
+  function pathLen(p){let s=0;for(let i=1;i<p.length;i++)s+=p[i-1].distanceTo(p[i]);return s;}
+  function along(p,cum,f){
+    const total=cum[cum.length-1]; if(total<=0) return {pos:p[p.length-1],i:p.length-2};
+    const d=Math.min(Math.max(f,0),1)*total;
+    let i=1; while(i<cum.length-1&&cum[i]<d) i++;
+    const seg=cum[i]-cum[i-1]||1, t=(d-cum[i-1])/seg;
+    return {pos:L.latLng(p[i-1].lat+(p[i].lat-p[i-1].lat)*t, p[i-1].lng+(p[i].lng-p[i-1].lng)*t), i:i-1};
+  }
+  function cumOf(p){const c=[0];for(let i=1;i<p.length;i++)c.push(c[i-1]+p[i-1].distanceTo(p[i]));return c;}
+
+  // ---------- Yürüyen karakter ----------
+  function walkerIcon(label){
+    return L.divIcon({className:'',iconSize:[60,70],iconAnchor:[30,62],popupAnchor:[0,-58],
+      html:`<div class="walker"><div class="wname">${esc(label)}</div><div class="wshadow"></div><div class="wbody"><span class="wemo">🧍</span></div></div>`});
+  }
+  function setLook(st,{moving,emo,on,faceLeft}){
+    const el=st.marker.getElement(); if(!el) return;
+    const w=el.querySelector('.walker'), e=el.querySelector('.wemo'), b=el.querySelector('.wbody');
+    if(moving!==undefined) w.classList.toggle('moving',moving);
+    if(on!==undefined) w.classList.toggle('off',!on);
+    if(emo&&e.textContent!==emo) e.textContent=emo;
+    // Emojiler varsayılan olarak sola bakar; doğuya giderken aynala
+    if(faceLeft!==undefined) b.style.transform=faceLeft?'':'scaleX(-1)';
+  }
+
+  // ---------- Canlı durum ----------
+  const devs={};          // id -> {marker, acc, trail, anim, lastTime, speed, label}
+  let cache=[], selectedId=null, firstFit=true, follow=false, replay=null;
+
   async function fetchDevices(){
-    let url=FIREBASE+'/devices.json'; if(SECRET)url+='?auth='+encodeURIComponent(SECRET);
-    const res=await fetch(url);
-    if(!res.ok)throw new Error(res.status);
+    const res=await fetch(fbUrl('/devices'));
+    if(!res.ok) throw new Error(res.status);
     const obj=await res.json();
     return obj?Object.entries(obj).map(([id,d])=>({id,label:(d&&d.label)||id,last:(d&&d.last)||null})):[];
   }
+
+  async function onNewFix(d){
+    const L0=d.last, target=L.latLng(L0.lat,L0.lng), on=isOnline(L0.time);
+    let st=devs[d.id];
+    if(!st){
+      st=devs[d.id]={label:d.label,lastTime:L0.time,speed:L0.speed,
+        marker:L.marker(target,{icon:walkerIcon(d.label),zIndexOffset:1000}).addTo(map),
+        acc:L.circle(target,{radius:Math.max(L0.accuracy||0,3),color:'#2f81f7',weight:1,fillOpacity:.12,interactive:false}).addTo(map),
+        trail:L.polyline([target],{color:'#2f81f7',weight:4,opacity:.55,dashArray:'2 8',lineCap:'round'}).addTo(map),
+        anim:null};
+      st.marker.on('click',()=>selectDevice(d.id));
+      setTimeout(()=>setLook(st,{emo:modeOf(L0.speed).emo,on,moving:false}),0);
+      return;
+    }
+    st.label=d.label;
+    setLook(st,{on});
+    if(L0.time===st.lastTime) return;
+    st.lastTime=L0.time; st.speed=L0.speed;
+    st.acc.setRadius(Math.max(L0.accuracy||0,3));
+
+    const from=st.marker.getLatLng(), dist=from.distanceTo(target);
+    // GPS titremesi: hassasiyet çemberi içindeki küçük oynamalarda karakteri yerinden oynatma
+    if(dist<Math.max(6,(L0.accuracy||0)*0.5)){ setLook(st,{emo:modeOf(L0.speed).emo,moving:false}); return; }
+    // Çok büyük atlama (uzun süre sinyal yok): yürütmeden yerine koy
+    if(dist>5000){ st.anim=null; st.marker.setLatLng(target); st.acc.setLatLng(target); st.trail.addLatLng(target); return; }
+
+    const path=await footPath(from,target);
+    const len=pathLen(path);
+    const v=(L0.speed&&L0.speed>0.4)?L0.speed:1.35;               // yürüme hızı ~1.35 m/s
+    const dur=Math.min(Math.max(len/v*1000,1500),11000);          // bir sonraki konum gelmeden varsın
+    st.anim={path,cum:cumOf(path),start:performance.now(),dur};
+    path.slice(1).forEach(p=>st.trail.addLatLng(p));
+    const tl=st.trail.getLatLngs(); if(tl.length>600) st.trail.setLatLngs(tl.slice(-600));
+  }
+
+  // Animasyon döngüsü
+  let lastPan=0;
+  function frame(now){
+    Object.entries(devs).forEach(([id,st])=>{
+      if(!st.anim||(replay&&replay.st===st)) return;
+      const a=st.anim, f=(now-a.start)/a.dur;
+      const {pos,i}=along(a.path,a.cum,f);
+      st.marker.setLatLng(pos); st.acc.setLatLng(pos);
+      const p0=a.path[i], p1=a.path[i+1]||a.path[i];
+      setLook(st,{moving:f<1,emo:f<1?modeOf(st.speed>0.4?st.speed:1.35).emo:modeOf(st.speed).emo,faceLeft:p1.lng<p0.lng});
+      if(f>=1) st.anim=null;
+      if(follow&&id===selectedId&&now-lastPan>250){ map.panTo(pos,{animate:false}); lastPan=now; }
+    });
+    if(replay) replayFrame(now);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
 
   async function refresh(){
     if(!FIREBASE){showMsg('Firebase adresi ayarlı değil.');return;}
@@ -170,28 +346,18 @@
     try{ list=await fetchDevices(); hideMsg(); }
     catch(e){ showMsg('Firebase erişilemedi ('+e.message+'). Adres/kural/anahtar kontrol.'); return; }
     cache=list;
-
     const online=list.filter(d=>d.last&&isOnline(d.last.time)).length;
     document.getElementById('statTxt').textContent=list.length+' cihaz · '+online+' çevrimiçi';
 
-    // Haritada işaretçiler
-    const bounds=[];
-    const seen={};
-    list.forEach(d=>{ if(!d.last)return; seen[d.id]=1;
-      const pos=[d.last.lat,d.last.lng]; bounds.push(pos); const on=isOnline(d.last.time);
-      const pop=`<b>${esc(d.label)}</b><br>${on?'🟢 Çevrimiçi':'🔴 Çevrimdışı'} · ${timeAgo(d.last.time)}<br>`
-        +`🔋 ${d.last.battery>=0?d.last.battery+'%':'-'} &nbsp; 👣 ${d.last.steps||0} &nbsp; 📏 ${((d.last.distanceM||0)/1000).toFixed(2)} km<br>`
-        +`📍 ${d.last.lat.toFixed(5)}, ${d.last.lng.toFixed(5)}`;
-      if(markers[d.id]){ markers[d.id].setLatLng(pos).setIcon(makeIcon(on)); markers[d.id].getPopup().setContent(pop); }
-      else{ markers[d.id]=L.marker(pos,{icon:makeIcon(on)}).addTo(map).bindPopup(pop); }
-    });
-    Object.keys(markers).forEach(id=>{ if(!seen[id]){ map.removeLayer(markers[id]); delete markers[id]; }});
+    const bounds=[], seen={};
+    for(const d of list){ if(!d.last) continue; seen[d.id]=1; bounds.push([d.last.lat,d.last.lng]); onNewFix(d); }
+    Object.keys(devs).forEach(id=>{ if(!seen[id]){ const s=devs[id]; [s.marker,s.acc,s.trail].forEach(l=>map.removeLayer(l)); delete devs[id]; }});
+    if(firstFit&&bounds.length){ map.fitBounds(bounds,{padding:[60,60],maxZoom:18}); firstFit=false; }
 
-    if(firstFit&&bounds.length){ map.fitBounds(bounds,{padding:[50,50],maxZoom:15}); firstFit=false; }
-
-    if(selectedId) renderDetail(selectedId); else renderList();
+    if(selectedId) renderLive(); else renderList();
   }
 
+  // ---------- Liste ----------
   function renderList(){
     document.getElementById('detail').style.display='none';
     document.getElementById('list').style.display='block';
@@ -199,52 +365,247 @@
     if(!cache.length){ el.innerHTML='<div class="empty">Henüz veri gönderen cihaz yok.<br>Takip edilen telefonda uygulamayı açıp Firebase adresini girip takibi başlatın.</div>'; return; }
     el.innerHTML='';
     cache.forEach(d=>{
-      const on=d.last&&isOnline(d.last.time);
+      const on=d.last&&isOnline(d.last.time), m=modeOf(d.last&&d.last.speed);
       const bat=d.last&&d.last.battery>=0?d.last.battery+'%':'-';
       const km=d.last?((d.last.distanceM||0)/1000).toFixed(2):'0';
-      const steps=d.last?(d.last.steps||0):0;
-      const c=document.createElement('div'); c.className='card'+(d.id===selectedId?' sel':'');
-      c.innerHTML=`<div class="avatar">${svg('phone')}<div class="status ${on?'st-on':'st-off'}"></div></div>
+      const c=document.createElement('div'); c.className='card';
+      c.innerHTML=`<div class="avatar">${m.emo}<div class="status ${on?'st-on':'st-off'}"></div></div>
         <div class="info"><div class="name">${esc(d.label)}</div>
-        <div class="sub"><span>${svg('battery')}${bat}</span><span>${svg('walk')}${steps}</span><span>${svg('ruler')}${km} km</span>
+        <div class="sub"><span>${m.name}</span><span>${svg('battery')}${bat}</span><span>${svg('ruler')}${km} km</span>
         <span>${d.last?timeAgo(d.last.time):'konum yok'}</span></div></div>
         <div class="chev">${svg('chev')}</div>`;
-      c.onclick=()=>{ selectedId=d.id; if(d.last)map.setView([d.last.lat,d.last.lng],16); if(markers[d.id])markers[d.id].openPopup(); renderDetail(d.id); };
+      c.onclick=()=>selectDevice(d.id);
       el.appendChild(c);
     });
   }
 
+  // ---------- Detay ----------
+  function selectDevice(id){
+    stopReplay(true);
+    selectedId=id;
+    const d=cache.find(x=>x.id===id);
+    if(d&&d.last) map.setView([d.last.lat,d.last.lng],18);
+    setFollow(true);
+    document.getElementById('list').style.display='none';
+    document.getElementById('detail').style.display='block';
+    document.getElementById('dHead').innerHTML=`<div class="head"><button class="back">${svg('back')}</button>
+      <div><div class="dname">${esc(d?d.label:id)}</div><div id="dState" style="font-size:12px;margin-top:2px"></div></div></div>`;
+    document.querySelector('#dHead .back').onclick=()=>{ stopReplay(true); selectedId=null; setFollow(false); clearRoute(); renderList(); };
+    renderRanges(); document.getElementById('route').innerHTML='';
+    renderLive();
+    loadRoute('today');
+  }
+
+  let lastAddrKey='';
+  function renderLive(){
+    const d=cache.find(x=>x.id===selectedId); if(!d) return;
+    const L0=d.last, box=document.getElementById('dLive');
+    if(!L0){ box.innerHTML='<div class="empty">Bu cihazdan henüz konum gelmedi.</div>'; return; }
+    const on=isOnline(L0.time), m=modeOf(L0.speed);
+    const stEl=document.getElementById('dState');
+    if(stEl){ stEl.style.color=on?'#2ecc71':'#ff5a5a'; stEl.textContent=(on?'🟢 Çevrimiçi':'🔴 Çevrimdışı')+' · '+m.emo+' '+m.name+' · '+timeAgo(L0.time); }
+    box.innerHTML=`<div class="grid">
+        ${tile('walk','Adım',L0.steps||0,'adım')}
+        ${tile('ruler','Toplam yol',((L0.distanceM||0)/1000).toFixed(2),'km')}
+        ${tile('speed','Hız',kmh(L0.speed),'km/sa')}
+        ${tile('battery','Batarya',L0.battery>=0?L0.battery:'-','%')}
+        ${tile('alt','Rakım',L0.altitude!=null?Math.round(L0.altitude):'-','m')}
+        ${tile('target','Hassasiyet',L0.accuracy!=null?Math.round(L0.accuracy):'-','m')}
+      </div>`;
+    const key=L0.lat.toFixed(4)+','+L0.lng.toFixed(4);
+    if(key!==lastAddrKey){ lastAddrKey=key;
+      reverse(L0.lat,L0.lng).then(a=>{ document.getElementById('dAddr').innerHTML=`<div class="addr"><b>Şu an burada</b>${esc(a)}</div>`; });
+    }
+  }
   function tile(icon,label,val,unit){
     return `<div class="tile"><div class="lbl">${svg(icon)}${label}</div><div class="val">${val}${unit?` <small>${unit}</small>`:''}</div></div>`;
   }
 
-  function renderDetail(id){
-    const d=cache.find(x=>x.id===id); if(!d){ selectedId=null; renderList(); return; }
-    document.getElementById('list').style.display='none';
-    const box=document.getElementById('detail'); box.style.display='block';
-    const L0=d.last; const on=L0&&isOnline(L0.time);
-    if(!L0){ box.innerHTML=`<div class="head"><button class="back">${svg('back')}</button><div class="dname">${esc(d.label)}</div></div><div class="empty">Bu cihazdan henüz konum gelmedi.</div>`; box.querySelector('.back').onclick=()=>{selectedId=null;renderList();}; return; }
-    box.innerHTML=
-      `<div class="head"><button class="back">${svg('back')}</button>
-        <div><div class="dname">${esc(d.label)}</div>
-        <div style="font-size:12px;color:${on?'#2ecc71':'#ff5a5a'};margin-top:2px">${on?'🟢 Çevrimiçi':'🔴 Çevrimdışı'} · ${timeAgo(L0.time)}</div></div></div>
-      <div class="grid">
-        ${tile('walk','Adım',L0.steps||0,'adım')}
-        ${tile('ruler','Yürünen yol',((L0.distanceM||0)/1000).toFixed(2),'km')}
-        ${tile('battery','Batarya',L0.battery>=0?L0.battery:'-','%')}
-        ${tile('speed','Hız',kmh(L0.speed),'km/s')}
-        ${tile('alt','Rakım',L0.altitude!=null?Math.round(L0.altitude):'-','m')}
-        ${tile('target','Hassasiyet',L0.accuracy!=null?Math.round(L0.accuracy):'-','m')}
-        <div class="tile full"><div class="lbl">${svg('pin')}Konum</div><div class="val" style="font-size:15px">${L0.lat.toFixed(5)}, ${L0.lng.toFixed(5)}</div></div>
-        <div class="tile full"><div class="lbl">${svg('clock')}Son güncelleme</div><div class="val" style="font-size:15px">${fmtTime(L0.time)}</div></div>
-      </div>
-      <button class="btn" id="goMap">Haritada göster</button>`;
-    box.querySelector('.back').onclick=()=>{ selectedId=null; renderList(); };
-    box.querySelector('#goMap').onclick=()=>{ map.setView([L0.lat,L0.lng],17); if(markers[id])markers[id].openPopup(); };
+  // Adres (sokak / mahalle adı)
+  const addrCache={};
+  async function reverse(lat,lng){
+    const k=lat.toFixed(4)+','+lng.toFixed(4); if(addrCache[k]) return addrCache[k];
+    try{
+      const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&accept-language=tr&lat=${lat}&lon=${lng}`);
+      const j=await r.json(), a=j.address||{};
+      const parts=[a.road||a.pedestrian||a.footway||a.path, a.house_number, a.neighbourhood||a.suburb||a.quarter, a.town||a.city_district||a.district, a.city||a.province].filter(Boolean);
+      return addrCache[k]=(parts.join(', ')||j.display_name||(lat.toFixed(5)+', '+lng.toFixed(5)));
+    }catch(e){ return lat.toFixed(5)+', '+lng.toFixed(5); }
   }
 
+  // ---------- Rota geçmişi ----------
+  const RANGES={hour:['Son 1 saat',()=>Date.now()-3600e3,()=>Date.now()],
+    today:['Bugün',()=>new Date().setHours(0,0,0,0),()=>Date.now()],
+    yday:['Dün',()=>new Date().setHours(0,0,0,0)-864e5,()=>new Date().setHours(0,0,0,0)],
+    d1:['Son 24 saat',()=>Date.now()-864e5,()=>Date.now()],
+    d7:['Son 7 gün',()=>Date.now()-7*864e5,()=>Date.now()]};
+  let curRange='today', routeLayer=null, route=null;
+  function renderRanges(){
+    const el=document.getElementById('ranges'); el.innerHTML='';
+    Object.entries(RANGES).forEach(([k,[name]])=>{ const b=document.createElement('button');
+      b.className='chip'+(k===curRange?' sel':''); b.textContent=name; b.onclick=()=>loadRoute(k); el.appendChild(b); });
+  }
+  function clearRoute(){ if(routeLayer){ map.removeLayer(routeLayer); routeLayer=null; } route=null; }
+
+  async function loadRoute(k){
+    curRange=k; renderRanges(); stopReplay(true); clearRoute();
+    const box=document.getElementById('route'); box.innerHTML='<div class="empty">Rota yükleniyor…</div>';
+    const id=selectedId, from=RANGES[k][1](), to=RANGES[k][2]();
+    let pts=[];
+    try{
+      const r=await fetch(fbUrl('/history/'+encodeURIComponent(id),'orderBy=%22%24key%22&limitToLast=25000'));
+      const obj=r.ok?await r.json():null;
+      pts=obj?Object.values(obj).filter(p=>p&&p.time>=from&&p.time<=to&&p.lat!=null&&(p.accuracy==null||p.accuracy<80)):[];
+    }catch(e){}
+    if(id!==selectedId) return;
+    pts.sort((a,b)=>a.time-b.time);
+    if(pts.length<2){ box.innerHTML='<div class="empty">Bu aralıkta kayıtlı rota yok.<br>Rota geçmişi uygulamanın bu sürümüyle birlikte kaydedilmeye başlar.</div>'; return; }
+    buildRoute(pts);
+  }
+
+  function buildRoute(pts){
+    const ll=pts.map(p=>L.latLng(p.lat,p.lng));
+    const cum=cumOf(ll);
+    // Segment hızları (kayıtlı hız yoksa mesafe/süre)
+    const spd=pts.map((p,i)=>{ if(p.speed>0) return p.speed; if(!i) return 0;
+      const dt=(p.time-pts[i-1].time)/1000; return dt>0?ll[i].distanceTo(ll[i-1])/dt:0; });
+    // Duraklamalar: 40 m içinde ≥3 dk kalınan yerler
+    const stops=[]; let s=0;
+    for(let i=1;i<=pts.length;i++){
+      if(i<pts.length&&ll[i].distanceTo(ll[s])<40) continue;
+      const dur=pts[i-1].time-pts[s].time;
+      if(dur>=180e3) stops.push({at:ll[s],from:pts[s].time,to:pts[i-1].time,dur});
+      s=i;
+    }
+    const layer=L.layerGroup();
+    for(let i=1;i<ll.length;i++){
+      const gap=pts[i].time-pts[i-1].time;
+      L.polyline([ll[i-1],ll[i]],{color:gap>300e3?'#8ea0ba':modeOf(spd[i]).color,weight:6,opacity:.85,lineCap:'round',dashArray:gap>300e3?'4 10':null}).addTo(layer);
+    }
+    const played=L.polyline([],{color:'#0d47a1',weight:3,opacity:.95}).addTo(layer);
+    const endIco=(c,t)=>L.divIcon({className:'',iconSize:[24,24],iconAnchor:[12,12],html:`<div class="endIco" style="background:${c}">${t}</div>`});
+    L.marker(ll[0],{icon:endIco('#2ecc71','B')}).bindPopup('<b>Başlangıç</b><br>'+fmtTime(pts[0].time)).addTo(layer);
+    L.marker(ll[ll.length-1],{icon:endIco('#ff5a5a','S')}).bindPopup('<b>Son nokta</b><br>'+fmtTime(pts[pts.length-1].time)).addTo(layer);
+    stops.forEach((st,n)=>{
+      const m=L.marker(st.at,{icon:L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],html:`<div class="stopIco">${n+1}</div>`})})
+        .bindPopup(`<b>Durak ${n+1}</b><br>⏸ ${fmtDur(st.dur)}<br>${fmtClock(st.from)} – ${fmtClock(st.to)}<br><span class="ad">Adres yükleniyor…</span>`).addTo(layer);
+      m.on('popupopen',async e=>{ const a=await reverse(st.at.lat,st.at.lng); const el=e.popup.getElement().querySelector('.ad'); if(el) el.textContent='📍 '+a; });
+    });
+    layer.addTo(map); routeLayer=layer;
+    map.fitBounds(L.latLngBounds(ll),{padding:[50,50],maxZoom:18});
+    setFollow(false);
+
+    const total=cum[cum.length-1], dur=pts[pts.length-1].time-pts[0].time;
+    let moving=0; for(let i=1;i<pts.length;i++){ const dt=pts[i].time-pts[i-1].time; if(dt<300e3&&spd[i]>0.4) moving+=dt; }
+    const maxS=Math.max(...spd.filter(v=>v<70));
+    const steps=Math.max(0,(pts[pts.length-1].steps||0)-(pts[0].steps||0));
+    route={pts,ll,cum,spd,played,t0:pts[0].time,t1:pts[pts.length-1].time};
+
+    document.getElementById('route').innerHTML=`
+      <div class="grid g3" style="margin-top:12px">
+        ${tile('ruler','Mesafe',(total/1000).toFixed(2),'km')}
+        ${tile('clock','Süre',fmtDur(dur),'')}
+        ${tile('walk','Hareket',fmtDur(moving),'')}
+        ${tile('speed','Ort. hız',moving?kmh(total/(moving/1000)):'-','km/sa')}
+        ${tile('speed','En yüksek',kmh(maxS),'km/sa')}
+        ${tile('pin','Durak',stops.length,'')}
+      </div>
+      ${steps?`<div class="grid"><div class="tile full">${'<div class="lbl">'+svg('walk')+'Bu aralıkta adım</div>'}<div class="val">${steps} <small>adım</small></div></div></div>`:''}
+      <div class="legend"><span><i style="background:#2ecc71"></i>Yürüyüş</span><span><i style="background:#16a3c9"></i>Koşu</span>
+        <span><i style="background:#f5a623"></i>Bisiklet</span><span><i style="background:#ff5a5a"></i>Araç</span><span><i style="background:#8ea0ba"></i>Sinyal yok</span></div>
+      <div class="player">
+        <div class="prow">
+          <button class="play" id="pPlay">▶</button>
+          <div class="ptime"><div class="t" id="pT">${fmtClock(route.t0)}</div><div class="s" id="pS">Hazır · ${pts.length} nokta</div></div>
+          <select id="pSpeed">
+            <option value="1">1x (gerçek)</option><option value="5">5x</option><option value="20" selected>20x</option>
+            <option value="60">60x</option><option value="300">300x</option></select>
+        </div>
+        <input type="range" id="pBar" min="0" max="1000" value="0">
+      </div>
+      <button class="btn danger" id="clrHist">Bu cihazın rota geçmişini sil</button>`;
+    document.getElementById('pPlay').onclick=togglePlay;
+    document.getElementById('pBar').oninput=e=>seek(route.t0+(route.t1-route.t0)*e.target.value/1000);
+    document.getElementById('clrHist').onclick=clearHistory;
+  }
+
+  // ---------- Yürüyüş simülasyonu (kayıtlı rotayı oynat) ----------
+  function togglePlay(){
+    if(!route) return;
+    if(replay&&!replay.paused){ replay.paused=true; updPlayBtn(); return; }
+    if(!replay) startReplay(); else { replay.paused=false; replay.last=performance.now(); updPlayBtn(); }
+  }
+  function updPlayBtn(){ const b=document.getElementById('pPlay'); if(b) b.textContent=(replay&&!replay.paused)?'❚❚':'▶'; }
+  function startReplay(){
+    const st=devs[selectedId]; if(!st||!route) return;
+    if(st.anim) st.anim=null;
+    replay={t:route.t0,last:performance.now(),paused:false,idx:0,st};
+    setFollow(true); map.setZoom(Math.max(map.getZoom(),18));
+    document.getElementById('clock').style.display='block';
+    updPlayBtn();
+  }
+  function stopReplay(silent){
+    if(!replay) return;
+    const st=replay.st; replay=null;
+    document.getElementById('clock').style.display='none';
+    if(route) route.played.setLatLngs([]);
+    // Karakteri canlı konumuna geri koy
+    const d=cache.find(x=>devs[x.id]===st);
+    if(d&&d.last&&st){ const p=L.latLng(d.last.lat,d.last.lng); st.marker.setLatLng(p); st.acc.setLatLng(p); setLook(st,{moving:false,emo:modeOf(d.last.speed).emo}); }
+    if(!silent) updPlayBtn();
+  }
+  function seek(t){
+    if(!replay) startReplay();
+    replay.t=t; replay.idx=0; replay.paused=true; updPlayBtn(); replayFrame(performance.now(),true);
+  }
+  function replayFrame(now,force){
+    const r=replay, R=route; if(!r||!R) return;
+    if(!r.paused&&!force){
+      const sp=+(document.getElementById('pSpeed')||{value:20}).value;
+      r.t+=(now-r.last)*sp;
+    }
+    r.last=now;
+    // Uzun sinyal boşluklarını (>2 dk) hızlıca atla
+    while(r.idx<R.pts.length-1&&R.pts[r.idx+1].time<=r.t) r.idx++;
+    const i=r.idx, a=R.pts[i], b=R.pts[Math.min(i+1,R.pts.length-1)];
+    if(!r.paused&&b.time-a.time>120e3&&r.t<b.time) r.t=b.time-1000;
+    if(r.t>=R.t1){ r.t=R.t1; r.paused=true; updPlayBtn(); }
+    const f=b.time>a.time?Math.min(Math.max((r.t-a.time)/(b.time-a.time),0),1):1;
+    const pos=L.latLng(R.ll[i].lat+(R.ll[Math.min(i+1,R.ll.length-1)].lat-R.ll[i].lat)*f,
+                       R.ll[i].lng+(R.ll[Math.min(i+1,R.ll.length-1)].lng-R.ll[i].lng)*f);
+    const st=r.st; st.marker.setLatLng(pos); st.acc.setLatLng(pos);
+    const sp=R.spd[Math.min(i+1,R.spd.length-1)], m=modeOf(sp);
+    setLook(st,{moving:!r.paused&&sp>0.4,emo:m.emo,faceLeft:R.ll[Math.min(i+1,R.ll.length-1)].lng<R.ll[i].lng});
+    R.played.setLatLngs(R.ll.slice(0,i+1).concat([pos]));
+    if(follow&&now-lastPan>200){ map.panTo(pos,{animate:false}); lastPan=now; }
+    const clk=document.getElementById('clock'); clk.innerHTML=fmtClock(r.t)+`<small>${m.emo} ${m.name} · ${kmh(sp)} km/sa</small>`;
+    const pT=document.getElementById('pT'), pS=document.getElementById('pS'), bar=document.getElementById('pBar');
+    if(pT) pT.textContent=fmtClock(r.t);
+    if(pS) pS.textContent=`${m.emo} ${m.name} · ${(R.cum[i]/1000).toFixed(2)} km yol alındı`;
+    if(bar&&!force) bar.value=Math.round((r.t-R.t0)/(R.t1-R.t0||1)*1000);
+  }
+
+  async function clearHistory(){
+    if(!selectedId||!confirm('Bu cihazın tüm rota geçmişi silinsin mi?')) return;
+    try{ await fetch(fbUrl('/history/'+encodeURIComponent(selectedId)),{method:'DELETE'}); }catch(e){}
+    stopReplay(true); clearRoute(); loadRoute(curRange);
+  }
+
+  // ---------- Düğmeler ----------
+  function setFollow(v){ follow=v; document.getElementById('btnFollow').classList.toggle('on',v); }
+  document.getElementById('btnFollow').onclick=()=>{
+    if(!selectedId&&cache.length) { selectDevice(cache[0].id); return; }
+    setFollow(!follow);
+  };
+  map.on('dragstart',()=>setFollow(false));
+  document.getElementById('btnBig').onclick=()=>{
+    const app=document.getElementById('app'); app.classList.toggle('big');
+    document.getElementById('btnBig').textContent=app.classList.contains('big')?'⇲ Küçült':'⛶ Büyüt';
+    setTimeout(()=>map.invalidateSize(),50);
+  };
+
   refresh();
-  setInterval(refresh,10000);
+  setInterval(refresh,5000);
 </script>
 </body>
 </html>

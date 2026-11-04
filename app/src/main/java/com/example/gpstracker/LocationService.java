@@ -33,8 +33,8 @@ public class LocationService extends Service
     private static final int NOTIFICATION_ID = 1001;
 
     // --- PİL / HASSASİYET AYARLARI ---
-    private static final long UPDATE_INTERVAL_MS = 30_000L; // 30 sn
-    private static final float MIN_DISPLACEMENT_M = 10f;    // 10 m
+    private static final long UPDATE_INTERVAL_MS = 10_000L; // 10 sn (haritada akıcı yürüyüş için)
+    private static final float MIN_DISPLACEMENT_M = 5f;     // 5 m
 
     private LocationManager locationManager;
     private LocationRepository repository;

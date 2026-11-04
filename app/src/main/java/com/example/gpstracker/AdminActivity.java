@@ -45,6 +45,8 @@ public class AdminActivity extends Activity {
         webView.getSettings().setAllowUniversalAccessFromFileURLs(true);
         webView.getSettings().setAllowFileAccessFromFileURLs(true);
         webView.setWebViewClient(new WebViewClient());
+        // confirm()/alert() pencereleri için gerekli
+        webView.setWebChromeClient(new android.webkit.WebChromeClient());
 
         loginBtn.setOnClickListener(v -> {
             String u = user.getText().toString().trim();
